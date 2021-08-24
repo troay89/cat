@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?android:attr/selectableItemBackground">
+
+    <TextView
+        android:id="@+id/name_list"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:ellipsize="end"
+        android:lines="1"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/breed_List"
+        app:layout_constraintStart_toStartOf="@+id/breed_List"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="spread_inside"
+        tools:text="Вася" />
+
+    <TextView
+        android:id="@+id/breed_List"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:lines="1"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/age_list"
+        app:layout_constraintStart_toStartOf="@+id/age_list"
+        app:layout_constraintTop_toBottomOf="@+id/name_list"
+        tools:text="домашний" />
+
+    <TextView
+        android:id="@+id/age_list"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="33dp"
+        android:ellipsize="end"
+        android:lines="1"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/breed_List"
+        tools:text="5" />
+</androidx.constraintlayout.widget.ConstraintLayout>
