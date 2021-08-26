@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/catListFragment"
-        android:name="com.example.kotovskdatabase.ui.CatListFragment"
+        android:name="com.example.kotovskdatabase.ui.firstscreen.CatListFragment"
         android:label="cat_list_fragment"
         tools:layout="@layout/cat_list_fragment">
         <action
@@ -16,12 +16,11 @@
     </fragment>
     <fragment
         android:id="@+id/catFragment"
-        android:name="com.example.kotovskdatabase.ui.CatFragment"
+        android:name="com.example.kotovskdatabase.ui.secondscreen.CatFragment"
         android:label="cat_fragment"
         tools:layout="@layout/cat_fragment">
         <argument
             android:name="cat"
-            android:defaultValue="@null"
             app:argType="com.example.kotovskdatabase.repositiry.entity.Cat"
             app:nullable="true" />
     </fragment>

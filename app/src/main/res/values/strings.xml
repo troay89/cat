@@ -1,4 +1,11 @@
 <resources>
     <string name="app_name">cat database</string>
     <string name="add">добавить</string>
+    <string name="sort">сортировать</string>
+    <string name="by_name">по имени</string>
+    <string name="by_age">по возросту</string>
+    <string name="date">по дате</string>
+    <string name="name">кличка</string>
+    <string name="breed">порода</string>
+    <string name="age">возраст</string>
 </resources>

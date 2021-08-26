@@ -1,4 +1,4 @@
-package com.example.kotovskdatabase.ui
+package com.example.kotovskdatabase.ui.firstscreen.adapter
 
 
 import android.view.LayoutInflater
@@ -7,9 +7,11 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.kotovskdatabase.databinding.ItemCatBinding
+
 import com.example.kotovskdatabase.repositiry.entity.Cat
 
-class CatAdapter: ListAdapter<Cat, CatAdapter.CatViewHolder>(DiffCallback()) {
+class CatAdapter(private val listener: OnItemClickListener)
+    : ListAdapter<Cat, CatAdapter.CatViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CatViewHolder {
         val binding = ItemCatBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -24,17 +26,29 @@ class CatAdapter: ListAdapter<Cat, CatAdapter.CatViewHolder>(DiffCallback()) {
 
     inner class CatViewHolder(private val binding: ItemCatBinding) : RecyclerView.ViewHolder(binding.root) {
 
+        var item: Cat? = null
+            private set
+
         init {
             binding.apply {
-//                click
+                root.setOnClickListener {
+                    val position = adapterPosition
+                    if (position != RecyclerView.NO_POSITION) {
+                        val task = getItem(position)
+                        listener.onItemClick(task)
+                    }
+                }
             }
         }
 
         fun bind(cat: Cat) {
+
+            this.item = cat
+
             binding.apply {
-                nameList.text = cat.name
-                breedList.text = cat.breed
-                ageList.text = cat.age
+                nameList.text = item?.name
+                breedList.text = item?.breed
+                ageList.text = item?.age.toString()
             }
         }
     }
@@ -48,5 +62,7 @@ class CatAdapter: ListAdapter<Cat, CatAdapter.CatViewHolder>(DiffCallback()) {
             oldItem == newItem
     }
 
-
+    interface OnItemClickListener {
+        fun onItemClick(cat: Cat)
+    }
 }

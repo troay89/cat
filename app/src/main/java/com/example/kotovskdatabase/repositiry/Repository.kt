@@ -1,8 +1,10 @@
 package com.example.kotovskdatabase.repositiry
 
 import android.content.Context
+import android.util.Log
 import com.example.kotovskdatabase.repositiry.entity.Cat
 import com.example.kotovskdatabase.repositiry.room.CatsDatabase
+import com.example.kotovskdatabase.ui.firstscreen.SortOrder
 import kotlinx.coroutines.flow.Flow
 
 
@@ -10,6 +12,13 @@ class Repository private constructor(context: Context) {
 
     private val dao = CatsDatabase.create(context).catsDao
 
+    fun getTasks(string: String): Flow<List<Cat>> =
+        when (string) {
+            "BY_NAME" ->dao.getTasksSortedByName()
+            "BY_AGE" -> dao.getTasksSortedByBreed()
+            "BY_DATE" -> dao.getTasksSortedByDateCreated()
+            else -> dao.getAll()
+    }
 
     fun getAll(): Flow<List<Cat>> = dao.getAll()
 
@@ -29,8 +38,8 @@ class Repository private constructor(context: Context) {
             }
         }
 
-        fun get(): Repository {
-            return INSTANCE ?: throw IllegalStateException("CrimeRepository must be initialized")
-        }
+        fun get(): Repository =
+            INSTANCE ?: throw IllegalStateException("CrimeRepository must be initialized")
+
     }
 }
