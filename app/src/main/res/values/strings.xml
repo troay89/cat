@@ -8,4 +8,8 @@
     <string name="name">кличка</string>
     <string name="breed">порода</string>
     <string name="age">возраст</string>
+    <string name="add_name">введите кличку</string>
+    <string name="repository">выбор репоситория</string>
+    <string name="room">Room</string>
+    <string name="cursor">Cursor</string>
 </resources>

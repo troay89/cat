@@ -1,7 +1,6 @@
 package com.example.kotovskdatabase.ui.firstscreen
 
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
@@ -62,9 +61,7 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
             viewModel.catEvent.collect { event ->
                 when (event) {
                     is CatListViewModel.CatEvent.NavigateToAddCatFragment -> {
-                        val action = CatListFragmentDirections.actionCatListFragmentToCatFragment(
-                            null
-                        )
+                        val action = CatListFragmentDirections.actionCatListFragmentToCatFragment(null, "Новый кот")
                         findNavController().navigate(action)
                     }
 
@@ -77,7 +74,7 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
 
                     is CatListViewModel.CatEvent.NavigateToEditTaskScreen -> {
                         val action =
-                            CatListFragmentDirections.actionCatListFragmentToCatFragment(event.cat)
+                            CatListFragmentDirections.actionCatListFragmentToCatFragment(event.cat, "Редактирование")
                         findNavController().navigate(action)
                     }
 
@@ -125,7 +122,6 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
     }
 
     override fun onItemClick(cat: Cat) {
-        Log.d("onItemClick", cat.toString())
         viewModel.onCatSelected(cat)
     }
 }

@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/catListFragment"
         android:name="com.example.kotovskdatabase.ui.firstscreen.CatListFragment"
-        android:label="cat_list_fragment"
+        android:label="список котов"
         tools:layout="@layout/cat_list_fragment">
         <action
             android:id="@+id/action_catListFragment_to_catFragment"
@@ -17,11 +17,14 @@
     <fragment
         android:id="@+id/catFragment"
         android:name="com.example.kotovskdatabase.ui.secondscreen.CatFragment"
-        android:label="cat_fragment"
+        android:label="{title}"
         tools:layout="@layout/cat_fragment">
         <argument
             android:name="cat"
             app:argType="com.example.kotovskdatabase.repositiry.entity.Cat"
             app:nullable="true" />
+        <argument
+            android:name="title"
+            app:argType="string" />
     </fragment>
 </navigation>

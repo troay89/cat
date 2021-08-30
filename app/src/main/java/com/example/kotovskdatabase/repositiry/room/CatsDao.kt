@@ -26,5 +26,5 @@ interface CatsDao {
     suspend fun update(cat: Cat)
 
     @Delete
-    suspend fun delete(cat: Cat)
+    suspend fun delete(cat: Cat): Int
 }

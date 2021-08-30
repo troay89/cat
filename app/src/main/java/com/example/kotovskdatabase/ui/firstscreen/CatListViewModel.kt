@@ -1,9 +1,12 @@
 package com.example.kotovskdatabase.ui.firstscreen
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
+import com.example.kotovskdatabase.App
 import com.example.kotovskdatabase.repositiry.Repository
+import com.example.kotovskdatabase.repositiry.Repository.Companion.get
+import com.example.kotovskdatabase.repositiry.RequestsDao
+import com.example.kotovskdatabase.repositiry.cursor.CatListener
+import com.example.kotovskdatabase.repositiry.cursor.CursorDataBase
 import com.example.kotovskdatabase.repositiry.entity.Cat
 import com.example.kotovskdatabase.ui.ADD_TASK_RESULT_OK
 import com.example.kotovskdatabase.ui.EDIT_TASK_RESULT_OK
@@ -14,13 +17,14 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-class CatListViewModel(
-    private val repository: Repository,
-    private val preferencesManager: PreferencesManager
-) : ViewModel() {
+class CatListViewModel(val preferencesManager: PreferencesManager): ViewModel() {
+
+    private val repository = get()
+
 
 //    val preferencesFlow: Flow<FilterPreferences> = preferencesManager.orderFlow
 
+    @ExperimentalCoroutinesApi
     private val preferencesFlow: Flow<String> = preferencesManager.orderFlow2
 
 
@@ -29,12 +33,11 @@ class CatListViewModel(
     val catEvent: Flow<CatEvent> = catEventChannel.receiveAsFlow()
 
     @ExperimentalCoroutinesApi
-    private val catFlow2 = preferencesFlow.flatMapLatest { filterPreferences ->
+    private val catFlow = preferencesFlow.flatMapLatest { filterPreferences ->
         repository.getTasks(filterPreferences)
     }
 
-    private val catFlow = repository.getAll()
-
+//    private val catFlow = repository.getAll()
 
     fun onAddNewCatClick() = viewModelScope.launch {
         catEventChannel.send(CatEvent.NavigateToAddCatFragment)
@@ -77,5 +80,5 @@ class CatListViewModel(
     }
 
     @ExperimentalCoroutinesApi
-    val cats = catFlow2.asLiveData()
+    val cats: LiveData<List<Cat>> = catFlow.asLiveData()
 }

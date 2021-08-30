@@ -1,10 +1,12 @@
 package com.example.kotovskdatabase.ui.secondscreen
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.kotovskdatabase.App
+import com.example.kotovskdatabase.repositiry.Repository
 import com.example.kotovskdatabase.repositiry.Repository.Companion.get
+import com.example.kotovskdatabase.repositiry.cursor.CursorDataBase
 import com.example.kotovskdatabase.repositiry.entity.Cat
 import com.example.kotovskdatabase.ui.ADD_TASK_RESULT_OK
 import com.example.kotovskdatabase.ui.EDIT_TASK_RESULT_OK
@@ -13,7 +15,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 class CatViewModel(
-    private val state: SavedStateHandle
+    private val state: SavedStateHandle,
 ) : ViewModel() {
 
     val cat: Cat? = state.get<Cat>("cat")
@@ -22,7 +24,6 @@ class CatViewModel(
 
     var catName = state.get<String>("catName") ?: cat?.name ?: ""
         set(value) {
-            Log.d("onSaveClick", cat.toString())
             field = value
             state.set("catName", value)
         }
@@ -41,7 +42,6 @@ class CatViewModel(
 
 
     fun onSaveClick() {
-        Log.d("onSaveClick", cat.toString())
         if (catName.isBlank() || catBreed.isBlank() || catAge.toString().isBlank()) {
             showInvalidInputMessage("не все поля заполнены")
             return
@@ -66,7 +66,6 @@ class CatViewModel(
     }
 
     private fun updateCat(updateCat: Cat) = viewModelScope.launch {
-        Log.d("updateCat", updateCat.toString())
         repository.update(updateCat)
         addEditCatEventChannel.send(AddEditCatEvent.NavigateBackWithResult(EDIT_TASK_RESULT_OK))
     }

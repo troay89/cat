@@ -1,16 +1,15 @@
 package com.example.kotovskdatabase.repositiry
 
 import android.content.Context
-import android.util.Log
 import com.example.kotovskdatabase.repositiry.entity.Cat
-import com.example.kotovskdatabase.repositiry.room.CatsDatabase
-import com.example.kotovskdatabase.ui.firstscreen.SortOrder
+import com.example.kotovskdatabase.repositiry.room.DatabaseRoom
+
 import kotlinx.coroutines.flow.Flow
 
 
 class Repository private constructor(context: Context) {
 
-    private val dao = CatsDatabase.create(context).catsDao
+    private val dao = DatabaseRoom.create(context).catsDao
 
     fun getTasks(string: String): Flow<List<Cat>> =
         when (string) {

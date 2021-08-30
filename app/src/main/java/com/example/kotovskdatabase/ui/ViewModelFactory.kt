@@ -5,8 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.kotovskdatabase.App
 import com.example.kotovskdatabase.ui.firstscreen.CatListViewModel
-import com.example.kotovskdatabase.ui.secondscreen.CatViewModel
-import java.lang.IllegalStateException
 
 class ViewModelFactory(
     private val app: App
@@ -14,13 +12,11 @@ class ViewModelFactory(
 
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         val viewModel = when (modelClass) {
-            CatViewModel::class.java -> {
-                CatViewModel(app.state
-//                    , app.repository
-                )
-            }
+//            CatViewModel::class.java -> {
+//                CatViewModel(app.state, app.cursorDataBase)
+//            }
             CatListViewModel::class.java -> {
-                CatListViewModel(app.repository, app.preferences)
+                CatListViewModel(app.preferencesManager)
             }
 
             else -> throw IllegalStateException("Неизвестный класс модели")

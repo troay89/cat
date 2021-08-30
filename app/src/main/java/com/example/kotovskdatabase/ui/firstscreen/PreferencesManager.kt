@@ -10,7 +10,6 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
-//private const val TAG = "PreferencesManager"
 
 enum class SortOrder { BY_NAME, BY_AGE, BY_DATE }
 
@@ -60,17 +59,3 @@ fun SharedPreferences.getIntFlow(key: String, defaultValue: String = SortOrder.B
         unregisterOnSharedPreferenceChangeListener(listener)
     }
 }
-
-//@ExperimentalCoroutinesApi
-//fun SharedPreferences.getFilterPreferencesFlow(filterPreferences: FilterPreferences) = callbackFlow<FilterPreferences> {
-//
-//    val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key -> offer(getInt(key, defaultValue)) }
-//
-//    registerOnSharedPreferenceChangeListener(listener)
-//
-////    runCatching { offer(getInt(key, defaultValue)) }
-//
-//    awaitClose {
-//        unregisterOnSharedPreferenceChangeListener(listener)
-//    }
-//}

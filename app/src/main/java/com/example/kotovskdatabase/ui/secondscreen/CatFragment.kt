@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import androidx.core.os.bundleOf
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
@@ -12,13 +13,14 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.kotovskdatabase.databinding.CatFragmentBinding
+import com.example.kotovskdatabase.ui.factory
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.collect
 
 
 class CatFragment : Fragment() {
 
-    private val viewModel: CatViewModel by viewModels()
+    private val viewModel: CatViewModel by viewModels ()
 
     private var _binding: CatFragmentBinding? = null
     private val binding get() = _binding!!
@@ -34,8 +36,17 @@ class CatFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+
         binding.fabAddCat.setOnClickListener {
             viewModel.onSaveClick()
+        }
+
+        binding.ageEdit.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEND) {
+                viewModel.onSaveClick()
+                return@setOnEditorActionListener true
+            }
+            return@setOnEditorActionListener false
         }
 
         binding.apply {
@@ -81,5 +92,4 @@ class CatFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
-
 }
