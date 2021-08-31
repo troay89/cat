@@ -12,15 +12,19 @@ import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.example.kotovskdatabase.App
 import com.example.kotovskdatabase.databinding.CatFragmentBinding
+import com.example.kotovskdatabase.ui.ViewModelFactory
 import com.example.kotovskdatabase.ui.factory
+import com.example.kotovskdatabase.ui.firstscreen.CatListFragment
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.collect
 
 
 class CatFragment : Fragment() {
 
-    private val viewModel: CatViewModel by viewModels ()
+    private val viewModel: CatViewModel by viewModels()
+//    { ViewModelFactory(this, requireContext().applicationContext as App) }
 
     private var _binding: CatFragmentBinding? = null
     private val binding get() = _binding!!

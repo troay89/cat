@@ -20,7 +20,10 @@ class CatViewModel(
 
     val cat: Cat? = state.get<Cat>("cat")
 
-    private val repository = get()
+
+        private val repository: CursorDataBase = CursorDataBase.get()
+
+//    private val repository = get()
 
     var catName = state.get<String>("catName") ?: cat?.name ?: ""
         set(value) {
