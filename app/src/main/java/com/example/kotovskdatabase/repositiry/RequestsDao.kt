@@ -1,8 +1,6 @@
 package com.example.kotovskdatabase.repositiry
 
-import com.example.kotovskdatabase.repositiry.cursor.CatListener
 import com.example.kotovskdatabase.repositiry.entity.Cat
-import kotlinx.coroutines.flow.Flow
 
 interface RequestsDao {
 
@@ -14,7 +12,5 @@ interface RequestsDao {
 
     suspend fun update(cat: Cat)
 
-    fun addListener(listener: CatListener)
 
-    fun removeListener(listener: CatListener)
 }

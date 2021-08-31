@@ -25,8 +25,6 @@ private const val CREATE_TABLE_SQL = "CREATE TABLE IF NOT EXISTS $TABLE_NAME" +
         " ($FIRST_COLUMN INTEGER PRIMARY KEY AUTOINCREMENT, $SECOND_COLUMN VARCHAR(50), $THIRD_COLUMN VARCHAR(50), " +
         "$FOURTH_COLUMN INTEGER, $FIFTH_COLUMN INTEGER);"
 
-typealias CatListener = (users: List<Cat>) -> Unit
-
 class CursorDataBase(context: Context): SQLiteOpenHelper(
     context,
     CATS_DATABASE,
@@ -36,7 +34,6 @@ class CursorDataBase(context: Context): SQLiteOpenHelper(
 
     private val listOfTopics = mutableListOf<Cat>()
 
-    private val listeners = mutableSetOf<CatListener>()
 
     override fun onCreate(db: SQLiteDatabase) {
         try {
@@ -54,7 +51,7 @@ class CursorDataBase(context: Context): SQLiteOpenHelper(
         return readableDatabase.rawQuery("SELECT * FROM $TABLE_NAME", null)
     }
 
-    fun getAll(): List<Cat> {
+    fun getAll() = flow<List<Cat>> {
         getCursorWithTopicsRead().use { cursor ->
             if (cursor.moveToFirst()) {
                 do {
@@ -66,10 +63,10 @@ class CursorDataBase(context: Context): SQLiteOpenHelper(
                     val person = Cat(id, name, breed, age, created)
                     listOfTopics.add(person)
                 } while (cursor.moveToNext())
+                emit(listOfTopics)
             }
             cursor.close()
         }
-        return listOfTopics
     }
 
     suspend fun save(cat: Cat) {
@@ -79,13 +76,10 @@ class CursorDataBase(context: Context): SQLiteOpenHelper(
         values.put(FOURTH_COLUMN, cat.age)
         values.put(FIFTH_COLUMN, cat.created)
         writableDatabase.insert(TABLE_NAME, null, values)
-        notifyChanges()
     }
 
     suspend fun delete(cat: Cat): Int {
         writableDatabase.delete(TABLE_NAME, "id = ${cat.id}", null)
-        listOfTopics.remove(cat)
-        notifyChanges()
         return 1
     }
 
@@ -96,22 +90,21 @@ class CursorDataBase(context: Context): SQLiteOpenHelper(
         updatedValues.put(FOURTH_COLUMN, cat.age)
         val where = "id = ${cat.id}"
         writableDatabase.update(TABLE_NAME, updatedValues, where, null)
-        notifyChanges()
     }
 
+    companion object {
 
-    fun addListener(listener: CatListener) {
-        listener.invoke(listOfTopics)
-        listeners.add(listener)
+        private var INSTANCE: CursorDataBase? = null
+
+        fun initialize(context: Context) {
+            if (INSTANCE == null) {
+                INSTANCE = CursorDataBase(context)
+            }
+        }
+
+        fun get(): CursorDataBase =
+            INSTANCE ?: throw IllegalStateException("CrimeRepository must be initialized")
 
     }
 
-    fun removeListener(listener: CatListener) {
-        listeners.remove(listener)
-
-    }
-
-    private fun notifyChanges() {
-        listeners.forEach { it.invoke(listOfTopics) }
-    }
 }

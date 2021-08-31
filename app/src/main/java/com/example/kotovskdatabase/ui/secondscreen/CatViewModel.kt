@@ -3,7 +3,6 @@ package com.example.kotovskdatabase.ui.secondscreen
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.kotovskdatabase.App
 import com.example.kotovskdatabase.repositiry.Repository
 import com.example.kotovskdatabase.repositiry.Repository.Companion.get
 import com.example.kotovskdatabase.repositiry.cursor.CursorDataBase
@@ -20,7 +19,8 @@ class CatViewModel(
 
     val cat: Cat? = state.get<Cat>("cat")
 
-    private val repository = get()
+//    private val repository = Repository.get()
+    private val repository = CursorDataBase.get()
 
     var catName = state.get<String>("catName") ?: cat?.name ?: ""
         set(value) {

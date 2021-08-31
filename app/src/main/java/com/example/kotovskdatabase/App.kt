@@ -8,11 +8,12 @@ import com.example.kotovskdatabase.ui.firstscreen.PreferencesManager
 class App : Application() {
 
 
-    var preferencesManager: PreferencesManager = PreferencesManager(this)
-    val cursorDataBase: CursorDataBase = CursorDataBase(this)
+    lateinit var preferencesManager: PreferencesManager
 
     override fun onCreate() {
         super.onCreate()
         Repository.initialize(this)
+        CursorDataBase.initialize(this)
+        preferencesManager = PreferencesManager(this)
     }
 }
