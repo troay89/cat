@@ -66,18 +66,14 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
                     is CatListViewModel.CatEvent.NavigateToAddCatFragment -> {
                         val action = CatListFragmentDirections.actionCatListFragmentToCatFragment(
                             null,
-                            "Новый кот"
+                            "Новый кот",
+                            viewModel.preferencesKey.getKeyBD()
                         )
                         findNavController().navigate(action)
                     }
 
                     is CatListViewModel.CatEvent.ShowUndoDeleteTaskMessage -> {
-
-                        Snackbar.make(requireView(), "Кот удалён", Snackbar.LENGTH_LONG)
-                            .setAction("ОТМЕНИТЬ") {
-                                viewModel.onUndoDeletedClick(event.cat)
-                                catAdapter.submitList(viewModel.chooseRepository().getTasks(viewModel.preferencesKey.getKeySort()))
-                            }.show()
+                        Snackbar.make(requireView(), "Кот удалён", Snackbar.LENGTH_LONG).show()
                         catAdapter.submitList(viewModel.chooseRepository().getTasks(viewModel.preferencesKey.getKeySort()))
                     }
 
@@ -85,7 +81,8 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
                         val action =
                             CatListFragmentDirections.actionCatListFragmentToCatFragment(
                                 event.cat,
-                                "Редактирование"
+                                "Редактирование",
+                                viewModel.preferencesKey.getKeyBD()
                             )
                         findNavController().navigate(action)
                     }
@@ -129,13 +126,13 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
 
             R.id.action_room -> {
                 viewModel.choosingApiBD(ChooseBD.BY_ROOM )
-                viewModel.chooseRepository()
+                Snackbar.make(requireView(), "вы используете room", Snackbar.LENGTH_SHORT).show()
                 true
             }
 
             R.id.action_cursor -> {
                 viewModel.choosingApiBD(ChooseBD.BY_CURSOR)
-                viewModel.chooseRepository()
+                Snackbar.make(requireView(), "вы используете cursor", Snackbar.LENGTH_SHORT).show()
                 true
             }
 

@@ -18,15 +18,6 @@ class CatListViewModel(
     private val preferencesManager: PreferencesManager,
 ) : ViewModel() {
 
-//    private var repository: RequestsDao = if (preferencesManager.getKeyBD() == ChooseBD.BY_ROOM.name){
-//        Log.d("init", "ROOM")
-//        Repository.get()
-//    }else {
-//        Log.d("init", "COURSE")
-//        CursorDataBase.get()
-//    }
-
-
     fun chooseRepository() = if (preferencesManager.getKeyBD() == ChooseBD.BY_ROOM.name) {
         Log.d("init", "ROOM")
         Repository.get()
