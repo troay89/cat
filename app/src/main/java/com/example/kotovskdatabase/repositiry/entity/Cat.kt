@@ -4,6 +4,7 @@ import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
+import java.text.DateFormat
 
 
 @Entity(tableName = "cats_table")
@@ -16,4 +17,7 @@ data class Cat(
     val breed: String,
     val age: Int,
     val created: Long = System.currentTimeMillis(),
-): Parcelable
+): Parcelable {
+    val createdDateFormatted: String
+        get() = DateFormat.getDateTimeInstance().format(created)
+}

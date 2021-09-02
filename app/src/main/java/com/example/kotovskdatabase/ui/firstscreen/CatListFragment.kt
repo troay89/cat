@@ -1,5 +1,6 @@
 package com.example.kotovskdatabase.ui.firstscreen
 
+//import com.example.kotovskdatabase.ui.factory
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
@@ -20,9 +21,11 @@ import kotlinx.coroutines.flow.collect
 class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
 
     private val viewModel: CatListViewModel by viewModels { factory() }
+//    { ViewModelFactory(this, requireContext().applicationContext as App) }
 
     private var _binding: CatListFragmentBinding? = null
     private val binding get() = _binding!!
+    lateinit var  catAdapter: CatAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,7 +38,7 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val catAdapter = CatAdapter(this)
+        catAdapter = CatAdapter(this)
 
 
         binding.apply {
@@ -46,9 +49,9 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
                 SwipeHelper(viewModel::onTaskSwiped).attachToRecyclerView(recyclerViewCats)
             }
 
-            viewModel.cats.observe(viewLifecycleOwner) {
-                catAdapter.submitList(it)
-            }
+//            viewModel.cats.observe(viewLifecycleOwner) {
+            catAdapter.submitList(viewModel.chooseRepository().getTasks(viewModel.preferencesKey.getKeySort()))
+//            }
 
             binding.fabAddCat.setOnClickListener {
                 viewModel.onAddNewCatClick()
@@ -61,20 +64,26 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
             viewModel.catEvent.collect { event ->
                 when (event) {
                     is CatListViewModel.CatEvent.NavigateToAddCatFragment -> {
-                        val action = CatListFragmentDirections.actionCatListFragmentToCatFragment(null, "Новый кот")
+                        val action = CatListFragmentDirections.actionCatListFragmentToCatFragment(
+                            null,
+                            "Новый кот",
+                            viewModel.preferencesKey.getKeyBD()
+                        )
                         findNavController().navigate(action)
                     }
 
                     is CatListViewModel.CatEvent.ShowUndoDeleteTaskMessage -> {
-                        Snackbar.make(requireView(), "Кот удалён", Snackbar.LENGTH_LONG)
-                            .setAction("ОТМЕНИТЬ") {
-                                viewModel.onUndoDeletedClick(event.cat)
-                            }.show()
+                        Snackbar.make(requireView(), "Кот удалён", Snackbar.LENGTH_LONG).show()
+                        catAdapter.submitList(viewModel.chooseRepository().getTasks(viewModel.preferencesKey.getKeySort()))
                     }
 
                     is CatListViewModel.CatEvent.NavigateToEditTaskScreen -> {
                         val action =
-                            CatListFragmentDirections.actionCatListFragmentToCatFragment(event.cat, "Редактирование")
+                            CatListFragmentDirections.actionCatListFragmentToCatFragment(
+                                event.cat,
+                                "Редактирование",
+                                viewModel.preferencesKey.getKeyBD()
+                            )
                         findNavController().navigate(action)
                     }
 
@@ -101,14 +110,29 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
         return when (item.itemId) {
             R.id.action_sort_by_name -> {
                 viewModel.onSortOrderSelected(SortOrder.BY_NAME)
+                catAdapter.submitList(viewModel.chooseRepository().getTasks(viewModel.preferencesKey.getKeySort()))
                 true
             }
             R.id.action_sort_by_age -> {
                 viewModel.onSortOrderSelected(SortOrder.BY_AGE)
+                catAdapter.submitList(viewModel.chooseRepository().getTasks(viewModel.preferencesKey.getKeySort()))
                 true
             }
             R.id.action_sort_by_date -> {
                 viewModel.onSortOrderSelected(SortOrder.BY_DATE)
+                catAdapter.submitList(viewModel.chooseRepository().getTasks(viewModel.preferencesKey.getKeySort()))
+                true
+            }
+
+            R.id.action_room -> {
+                viewModel.choosingApiBD(ChooseBD.BY_ROOM )
+                Snackbar.make(requireView(), "вы используете room", Snackbar.LENGTH_SHORT).show()
+                true
+            }
+
+            R.id.action_cursor -> {
+                viewModel.choosingApiBD(ChooseBD.BY_CURSOR)
+                Snackbar.make(requireView(), "вы используете cursor", Snackbar.LENGTH_SHORT).show()
                 true
             }
 
