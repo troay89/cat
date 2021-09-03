@@ -1,9 +1,7 @@
 package com.example.kotovskdatabase.ui.firstscreen
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.viewModelScope
+import android.util.Log
+import androidx.lifecycle.*
 import com.example.kotovskdatabase.repositiry.Repository
 import com.example.kotovskdatabase.repositiry.cursor.CursorDataBase
 import com.example.kotovskdatabase.repositiry.entity.Cat
@@ -14,9 +12,9 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class CatListViewModel(val preferencesManager: PreferencesManager): ViewModel() {
+class CatListViewModel(val preferencesManager: PreferencesManager) : ViewModel() {
 
-//    private val repository = Repository.get()
+    //    private val repository = Repository.get()
     private val repository = CursorDataBase.get()
 
     @ExperimentalCoroutinesApi
@@ -27,12 +25,33 @@ class CatListViewModel(val preferencesManager: PreferencesManager): ViewModel() 
     private val catEventChannel = Channel<CatEvent>()
     val catEvent: Flow<CatEvent> = catEventChannel.receiveAsFlow()
 
+    private var _users = MutableLiveData<List<Cat>>()
+    val users: LiveData<List<Cat>> = _users
+
+
 //    @ExperimentalCoroutinesApi
 //    private val catFlow = preferencesFlow.flatMapLatest { filterPreferences ->
 //        repository.getTasks(filterPreferences)
 //    }
 
-    private val catFlow = repository.getAll()
+//    private val catFlow = repository.getAll()
+
+    @ExperimentalCoroutinesApi
+    var cats: LiveData<List<Cat>> = repository.getAll().asLiveData()
+
+    init {
+        viewModelScope.launch {
+
+            repository.listenListCat().collect {
+                Log.d("aaa3", it.size.toString())
+                _users.value = it
+            }
+        }
+    }
+
+
+
+
 
     fun onAddNewCatClick() = viewModelScope.launch {
         catEventChannel.send(CatEvent.NavigateToAddCatFragment)
@@ -73,7 +92,4 @@ class CatListViewModel(val preferencesManager: PreferencesManager): ViewModel() 
         data class ShowUndoDeleteTaskMessage(val cat: Cat) : CatEvent()
         data class ShowTaskSavedConfirmationMessage(val msg: String) : CatEvent()
     }
-
-    @ExperimentalCoroutinesApi
-    val cats: LiveData<List<Cat>> = catFlow.asLiveData()
 }

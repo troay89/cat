@@ -8,6 +8,10 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 import com.example.kotovskdatabase.repositiry.RequestsDao
 import com.example.kotovskdatabase.repositiry.entity.Cat
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 
 import java.sql.SQLException
@@ -25,14 +29,18 @@ private const val CREATE_TABLE_SQL = "CREATE TABLE IF NOT EXISTS $TABLE_NAME" +
         " ($FIRST_COLUMN INTEGER PRIMARY KEY AUTOINCREMENT, $SECOND_COLUMN VARCHAR(50), $THIRD_COLUMN VARCHAR(50), " +
         "$FOURTH_COLUMN INTEGER, $FIFTH_COLUMN INTEGER);"
 
-class CursorDataBase(context: Context): SQLiteOpenHelper(
+typealias CatListener = (List<Cat>) -> Unit
+
+class CursorDataBase(context: Context) : SQLiteOpenHelper(
     context,
     CATS_DATABASE,
     null,
     DATABASE_VERSION
 ) {
 
-    private val listOfTopics = mutableListOf<Cat>()
+    private val listeners = mutableSetOf<CatListener>()
+
+    private var listOfTopics = mutableListOf<Cat>()
 
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -51,7 +59,22 @@ class CursorDataBase(context: Context): SQLiteOpenHelper(
         return readableDatabase.rawQuery("SELECT * FROM $TABLE_NAME", null)
     }
 
-    fun getAll() = flow<List<Cat>> {
+    fun listenListCat(): Flow<List<Cat>> = callbackFlow {
+
+        val listener: CatListener = {
+            trySend(it)
+            Log.d("aaa0", it.size.toString())
+        }
+
+        listeners.add(listener)
+
+        awaitClose {
+            listeners.remove(listener)
+        }
+    }
+
+    fun ubdateList(): List<Cat> {
+        listOfTopics = mutableListOf<Cat>()
         getCursorWithTopicsRead().use { cursor ->
             if (cursor.moveToFirst()) {
                 do {
@@ -63,10 +86,18 @@ class CursorDataBase(context: Context): SQLiteOpenHelper(
                     val person = Cat(id, name, breed, age, created)
                     listOfTopics.add(person)
                 } while (cursor.moveToNext())
-                emit(listOfTopics)
             }
             cursor.close()
         }
+//        Log.d("aaa2", listOfTopics.size.toString())
+        listeners.forEach { it(listOfTopics) }
+        return listOfTopics
+    }
+
+    fun getAll() = flow<List<Cat>> {
+        ubdateList()
+        Log.d("aaa6", listOfTopics.size.toString())
+        emit(listOfTopics)
     }
 
     suspend fun save(cat: Cat) {
@@ -75,21 +106,25 @@ class CursorDataBase(context: Context): SQLiteOpenHelper(
         values.put(THIRD_COLUMN, cat.breed)
         values.put(FOURTH_COLUMN, cat.age)
         values.put(FIFTH_COLUMN, cat.created)
+        listeners.forEach { it(listOfTopics) }
         writableDatabase.insert(TABLE_NAME, null, values)
+        ubdateList()
     }
 
     suspend fun delete(cat: Cat): Int {
         writableDatabase.delete(TABLE_NAME, "id = ${cat.id}", null)
+        ubdateList()
         return 1
     }
 
-    suspend fun update(cat: Cat){
+    suspend fun update(cat: Cat) {
         val updatedValues = ContentValues()
         updatedValues.put(SECOND_COLUMN, cat.name)
         updatedValues.put(THIRD_COLUMN, cat.breed)
         updatedValues.put(FOURTH_COLUMN, cat.age)
         val where = "id = ${cat.id}"
         writableDatabase.update(TABLE_NAME, updatedValues, where, null)
+        ubdateList()
     }
 
     companion object {

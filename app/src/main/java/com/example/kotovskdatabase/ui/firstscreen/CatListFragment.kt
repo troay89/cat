@@ -1,11 +1,14 @@
 package com.example.kotovskdatabase.ui.firstscreen
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.liveData
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.kotovskdatabase.R
@@ -46,9 +49,10 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
                 SwipeHelper(viewModel::onTaskSwiped).attachToRecyclerView(recyclerViewCats)
             }
 
-            viewModel.cats.observe(viewLifecycleOwner) {
+            viewModel.cats.observe(viewLifecycleOwner,  Observer {
+                Log.d("aaa5", it.size.toString())
                 catAdapter.submitList(it)
-            }
+            })
 
             binding.fabAddCat.setOnClickListener {
                 viewModel.onAddNewCatClick()
