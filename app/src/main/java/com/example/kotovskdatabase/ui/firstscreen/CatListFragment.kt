@@ -50,7 +50,7 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
             }
 
             viewModel.cats.observe(viewLifecycleOwner,  Observer {
-                Log.d("aaa5", it.size.toString())
+                Log.d("liveData", it.size.toString())
                 catAdapter.submitList(it)
             })
 

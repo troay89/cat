@@ -6,12 +6,11 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
-import com.example.kotovskdatabase.repositiry.RequestsDao
 import com.example.kotovskdatabase.repositiry.entity.Cat
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 
 import java.sql.SQLException
@@ -59,11 +58,11 @@ class CursorDataBase(context: Context) : SQLiteOpenHelper(
         return readableDatabase.rawQuery("SELECT * FROM $TABLE_NAME", null)
     }
 
-    fun listenListCat(): Flow<List<Cat>> = callbackFlow {
+    private fun listenListCat(): Flow<List<Cat>> = callbackFlow {
 
         val listener: CatListener = {
             trySend(it)
-            Log.d("aaa0", it.size.toString())
+            Log.d("listener", it.size.toString())
         }
 
         listeners.add(listener)
@@ -73,7 +72,7 @@ class CursorDataBase(context: Context) : SQLiteOpenHelper(
         }
     }
 
-    fun ubdateList(): List<Cat> {
+    fun updateList(): List<Cat> {
         listOfTopics = mutableListOf<Cat>()
         getCursorWithTopicsRead().use { cursor ->
             if (cursor.moveToFirst()) {
@@ -89,15 +88,18 @@ class CursorDataBase(context: Context) : SQLiteOpenHelper(
             }
             cursor.close()
         }
-//        Log.d("aaa2", listOfTopics.size.toString())
         listeners.forEach { it(listOfTopics) }
+        Log.d("updateList", listOfTopics.size.toString())
         return listOfTopics
     }
 
     fun getAll() = flow<List<Cat>> {
-        ubdateList()
-        Log.d("aaa6", listOfTopics.size.toString())
+        updateList()
         emit(listOfTopics)
+        listenListCat().collect() {
+            Log.d("getAll", it.size.toString())
+            emit(it)
+        }
     }
 
     suspend fun save(cat: Cat) {
@@ -106,14 +108,13 @@ class CursorDataBase(context: Context) : SQLiteOpenHelper(
         values.put(THIRD_COLUMN, cat.breed)
         values.put(FOURTH_COLUMN, cat.age)
         values.put(FIFTH_COLUMN, cat.created)
-        listeners.forEach { it(listOfTopics) }
         writableDatabase.insert(TABLE_NAME, null, values)
-        ubdateList()
+        updateList()
     }
 
     suspend fun delete(cat: Cat): Int {
         writableDatabase.delete(TABLE_NAME, "id = ${cat.id}", null)
-        ubdateList()
+        updateList()
         return 1
     }
 
@@ -124,7 +125,7 @@ class CursorDataBase(context: Context) : SQLiteOpenHelper(
         updatedValues.put(FOURTH_COLUMN, cat.age)
         val where = "id = ${cat.id}"
         writableDatabase.update(TABLE_NAME, updatedValues, where, null)
-        ubdateList()
+        updateList()
     }
 
     companion object {

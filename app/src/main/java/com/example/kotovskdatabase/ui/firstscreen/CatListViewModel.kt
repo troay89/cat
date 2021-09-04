@@ -25,9 +25,6 @@ class CatListViewModel(val preferencesManager: PreferencesManager) : ViewModel()
     private val catEventChannel = Channel<CatEvent>()
     val catEvent: Flow<CatEvent> = catEventChannel.receiveAsFlow()
 
-    private var _users = MutableLiveData<List<Cat>>()
-    val users: LiveData<List<Cat>> = _users
-
 
 //    @ExperimentalCoroutinesApi
 //    private val catFlow = preferencesFlow.flatMapLatest { filterPreferences ->
@@ -38,20 +35,6 @@ class CatListViewModel(val preferencesManager: PreferencesManager) : ViewModel()
 
     @ExperimentalCoroutinesApi
     var cats: LiveData<List<Cat>> = repository.getAll().asLiveData()
-
-    init {
-        viewModelScope.launch {
-
-            repository.listenListCat().collect {
-                Log.d("aaa3", it.size.toString())
-                _users.value = it
-            }
-        }
-    }
-
-
-
-
 
     fun onAddNewCatClick() = viewModelScope.launch {
         catEventChannel.send(CatEvent.NavigateToAddCatFragment)
