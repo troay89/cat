@@ -8,7 +8,6 @@ import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.liveData
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.kotovskdatabase.R
@@ -65,7 +64,7 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
             viewModel.catEvent.collect { event ->
                 when (event) {
                     is CatListViewModel.CatEvent.NavigateToAddCatFragment -> {
-                        val action = CatListFragmentDirections.actionCatListFragmentToCatFragment(null, "Новый кот")
+                        val action = CatListFragmentDirections.actionCatListFragmentToCatFragment(null, "Новый кот", event.keyBd)
                         findNavController().navigate(action)
                     }
 
@@ -78,7 +77,7 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
 
                     is CatListViewModel.CatEvent.NavigateToEditTaskScreen -> {
                         val action =
-                            CatListFragmentDirections.actionCatListFragmentToCatFragment(event.cat, "Редактирование")
+                            CatListFragmentDirections.actionCatListFragmentToCatFragment(event.cat, "Редактирование", event.keyBd)
                         findNavController().navigate(action)
                     }
 
@@ -113,6 +112,18 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
             }
             R.id.action_sort_by_date -> {
                 viewModel.onSortOrderSelected(SortOrder.BY_DATE)
+                true
+            }
+
+            R.id.action_room -> {
+                viewModel.choosingApiBD(ChooseBD.BY_ROOM )
+                Snackbar.make(requireView(), "вы используете room", Snackbar.LENGTH_SHORT).show()
+                true
+            }
+
+            R.id.action_cursor -> {
+                viewModel.choosingApiBD(ChooseBD.BY_CURSOR)
+                Snackbar.make(requireView(), "вы используете cursor", Snackbar.LENGTH_SHORT).show()
                 true
             }
 

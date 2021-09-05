@@ -14,7 +14,7 @@ interface CatsDao {
     fun getTasksSortedByName(): Flow<List<Cat>>
 
     @Query("SELECT * FROM cats_table ORDER BY age")
-    fun getTasksSortedByBreed(): Flow<List<Cat>>
+    fun getTasksSortedByAge(): Flow<List<Cat>>
 
     @Query("SELECT * FROM cats_table ORDER BY created")
     fun getTasksSortedByDateCreated(): Flow<List<Cat>>

@@ -14,47 +14,45 @@ import kotlinx.coroutines.launch
 
 class CatListViewModel(val preferencesManager: PreferencesManager) : ViewModel() {
 
-    //    private val repository = Repository.get()
-    private val repository = CursorDataBase.get()
-
-    @ExperimentalCoroutinesApi
-    private val preferencesFlow: Flow<String> = preferencesManager.orderFlow2
-
+    private fun chooseRepository() = if (preferencesManager.getKeyBD() == ChooseBD.BY_ROOM.name) {
+        Log.d("init first", "ROOM")
+        Repository.get()
+    } else {
+        Log.d("init first", "COURSE")
+        CursorDataBase.get()
+    }
 
     //    https://habr.com/ru/post/529944/
     private val catEventChannel = Channel<CatEvent>()
     val catEvent: Flow<CatEvent> = catEventChannel.receiveAsFlow()
 
-
-//    @ExperimentalCoroutinesApi
-//    private val catFlow = preferencesFlow.flatMapLatest { filterPreferences ->
-//        repository.getTasks(filterPreferences)
-//    }
-
-//    private val catFlow = repository.getAll()
+    @ExperimentalCoroutinesApi
+    private val preferencesFlow: Flow<String> = preferencesManager.orderFlow2
 
     @ExperimentalCoroutinesApi
-    var cats: LiveData<List<Cat>> = repository.getAll().asLiveData()
+    private val catFlow:Flow<List<Cat>> =
+        preferencesFlow.flatMapLatest { filterPreferences ->
+        chooseRepository().getTasks(preferencesManager.getKeySort())
+    }
+
+    @ExperimentalCoroutinesApi
+    var cats: LiveData<List<Cat>> = catFlow.asLiveData()
 
     fun onAddNewCatClick() = viewModelScope.launch {
-        catEventChannel.send(CatEvent.NavigateToAddCatFragment)
+        catEventChannel.send(CatEvent.NavigateToAddCatFragment(preferencesManager.getKeyBD()))
     }
 
     fun onTaskSwiped(cat: Cat) = viewModelScope.launch {
-        repository.delete(cat)
+        chooseRepository().delete(cat)
         catEventChannel.send(CatEvent.ShowUndoDeleteTaskMessage(cat))
     }
 
     fun onUndoDeletedClick(cat: Cat) = viewModelScope.launch {
-        repository.save(cat)
-    }
-
-    fun onSortOrderSelected(sortOrder: SortOrder) = viewModelScope.launch {
-        preferencesManager.updateSortOrder(sortOrder)
+        chooseRepository().save(cat)
     }
 
     fun onCatSelected(cat: Cat) = viewModelScope.launch {
-        catEventChannel.send(CatEvent.NavigateToEditTaskScreen(cat))
+        catEventChannel.send(CatEvent.NavigateToEditTaskScreen(cat, preferencesManager.getKeyBD()))
     }
 
     fun onAddEditResult(result: Int) {
@@ -68,10 +66,18 @@ class CatListViewModel(val preferencesManager: PreferencesManager) : ViewModel()
         catEventChannel.send(CatEvent.ShowTaskSavedConfirmationMessage(s))
     }
 
+    fun onSortOrderSelected(sortOrder: SortOrder) = viewModelScope.launch {
+        preferencesManager.updateSortOrder(sortOrder)
+    }
+
+    fun choosingApiBD(chooseBD: ChooseBD) {
+        preferencesManager.updateKeyBD(chooseBD)
+    }
+
 
     sealed class CatEvent {
-        object NavigateToAddCatFragment : CatEvent()
-        data class NavigateToEditTaskScreen(val cat: Cat) : CatEvent()
+        data class NavigateToAddCatFragment(val keyBd: String) : CatEvent()
+        data class NavigateToEditTaskScreen(val cat: Cat, val keyBd: String) : CatEvent()
         data class ShowUndoDeleteTaskMessage(val cat: Cat) : CatEvent()
         data class ShowTaskSavedConfirmationMessage(val msg: String) : CatEvent()
     }

@@ -3,29 +3,29 @@ package com.example.kotovskdatabase.repositiry
 import android.content.Context
 import com.example.kotovskdatabase.repositiry.entity.Cat
 import com.example.kotovskdatabase.repositiry.room.DatabaseRoom
-
 import kotlinx.coroutines.flow.Flow
 
 
-class Repository private constructor(context: Context) {
+class Repository private constructor(context: Context) : RequestsDao {
 
     private val dao = DatabaseRoom.create(context).catsDao
 
-    fun getTasks(string: String): Flow<List<Cat>> =
-        when (string) {
-            "BY_NAME" ->dao.getTasksSortedByName()
-            "BY_AGE" -> dao.getTasksSortedByBreed()
+    override fun getTasks(typeSort: String): Flow<List<Cat>> =
+        when (typeSort) {
+            "BY_NAME" -> dao.getTasksSortedByName()
+
+            "BY_AGE" -> dao.getTasksSortedByAge()
+
             "BY_DATE" -> dao.getTasksSortedByDateCreated()
-            else -> dao.getAll()
+
+            else -> dao.getTasksSortedByDateCreated()
     }
 
-    fun getAll(): Flow<List<Cat>> = dao.getAll()
+    override suspend fun save(cat: Cat) = dao.add(cat)
 
-    suspend fun save(cat: Cat) = dao.add(cat)
+    override suspend fun update(cat: Cat) = dao.update(cat)
 
-    suspend fun update(cat: Cat) = dao.update(cat)
-
-    suspend fun delete(cat: Cat) = dao.delete(cat)
+    override suspend fun delete(cat: Cat) = dao.delete(cat)
 
     companion object {
 

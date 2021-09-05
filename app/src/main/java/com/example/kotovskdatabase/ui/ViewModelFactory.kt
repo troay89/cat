@@ -12,9 +12,6 @@ class ViewModelFactory(
 
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         val viewModel = when (modelClass) {
-//            CatViewModel::class.java -> {
-//                CatViewModel(app.state, app.cursorDataBase)
-//            }
             CatListViewModel::class.java -> {
                 CatListViewModel(app.preferencesManager)
             }

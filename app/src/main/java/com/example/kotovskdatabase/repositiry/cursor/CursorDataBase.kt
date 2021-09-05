@@ -2,17 +2,17 @@ package com.example.kotovskdatabase.repositiry.cursor
 
 import android.content.ContentValues
 import android.content.Context
-import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
+import com.example.kotovskdatabase.repositiry.RequestsDao
 import com.example.kotovskdatabase.repositiry.entity.Cat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
-
 import java.sql.SQLException
 
 const val FIRST_COLUMN = "id"
@@ -30,7 +30,7 @@ private const val CREATE_TABLE_SQL = "CREATE TABLE IF NOT EXISTS $TABLE_NAME" +
 
 typealias CatListener = (List<Cat>) -> Unit
 
-class CursorDataBase(context: Context) : SQLiteOpenHelper(
+class CursorDataBase(context: Context) : RequestsDao, SQLiteOpenHelper(
     context,
     CATS_DATABASE,
     null,
@@ -40,6 +40,8 @@ class CursorDataBase(context: Context) : SQLiteOpenHelper(
     private val listeners = mutableSetOf<CatListener>()
 
     private var listOfTopics = mutableListOf<Cat>()
+
+    private lateinit var typeSorting: String
 
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -54,15 +56,11 @@ class CursorDataBase(context: Context) : SQLiteOpenHelper(
         Log.d("onUpgrade", "onUpgrade called")
     }
 
-    private fun getCursorWithTopicsRead(): Cursor {
-        return readableDatabase.rawQuery("SELECT * FROM $TABLE_NAME", null)
-    }
-
+    @ExperimentalCoroutinesApi
     private fun listenListCat(): Flow<List<Cat>> = callbackFlow {
 
         val listener: CatListener = {
             trySend(it)
-            Log.d("listener", it.size.toString())
         }
 
         listeners.add(listener)
@@ -72,9 +70,61 @@ class CursorDataBase(context: Context) : SQLiteOpenHelper(
         }
     }
 
-    fun updateList(): List<Cat> {
+    @ExperimentalCoroutinesApi
+    override fun getTasks(typeSort: String) = flow<List<Cat>> {
+        typeSorting = typeSort
+        updateList(typeSorting)
+        emit(listOfTopics)
+        listenListCat().collect() {
+            Log.d("getAll", it.size.toString())
+            emit(it)
+        }
+    }
+
+    override suspend fun save(cat: Cat) {
+        val values = ContentValues()
+        values.put(SECOND_COLUMN, cat.name)
+        values.put(THIRD_COLUMN, cat.breed)
+        values.put(FOURTH_COLUMN, cat.age)
+        values.put(FIFTH_COLUMN, cat.created)
+        writableDatabase.insert(TABLE_NAME, null, values)
+        updateList(typeSorting)
+    }
+
+    override suspend fun delete(cat: Cat): Int {
+        writableDatabase.delete(TABLE_NAME, "id = ${cat.id}", null)
+        updateList(typeSorting)
+        return 1
+    }
+
+    override suspend fun update(cat: Cat) {
+        val updatedValues = ContentValues()
+        updatedValues.put(SECOND_COLUMN, cat.name)
+        updatedValues.put(THIRD_COLUMN, cat.breed)
+        updatedValues.put(FOURTH_COLUMN, cat.age)
+        val where = "id = ${cat.id}"
+        writableDatabase.update(TABLE_NAME, updatedValues, where, null)
+        updateList(typeSorting)
+    }
+
+
+
+    private fun updateList(sortList: String): List<Cat> {
         listOfTopics = mutableListOf<Cat>()
-        getCursorWithTopicsRead().use { cursor ->
+        when (sortList) {
+            "BY_NAME" -> getCursorSortName(sortList)
+            "BY_AGE" -> getCursorSortAge(sortList)
+            else -> getCursorSortCreated(sortList)
+
+        }
+        listeners.forEach { it(listOfTopics) }
+        Log.d("updateList", listOfTopics.size.toString())
+        return listOfTopics
+    }
+
+    private fun getCursorSortCreated(sortList: String) {
+        return readableDatabase.rawQuery("SELECT * FROM $TABLE_NAME ORDER BY created", null).use { cursor ->
+            Log.d("getTasks cursor", sortList)
             if (cursor.moveToFirst()) {
                 do {
                     val id = cursor.getInt(cursor.getColumnIndex(FIRST_COLUMN))
@@ -88,44 +138,42 @@ class CursorDataBase(context: Context) : SQLiteOpenHelper(
             }
             cursor.close()
         }
-        listeners.forEach { it(listOfTopics) }
-        Log.d("updateList", listOfTopics.size.toString())
-        return listOfTopics
     }
 
-    fun getAll() = flow<List<Cat>> {
-        updateList()
-        emit(listOfTopics)
-        listenListCat().collect() {
-            Log.d("getAll", it.size.toString())
-            emit(it)
+    private fun getCursorSortAge(sortList: String) {
+        return readableDatabase.rawQuery("SELECT * FROM $TABLE_NAME ORDER BY age", null).use { cursor ->
+            Log.d("getTasks cursor", sortList)
+            if (cursor.moveToFirst()) {
+                do {
+                    val id = cursor.getInt(cursor.getColumnIndex(FIRST_COLUMN))
+                    val name = cursor.getString(cursor.getColumnIndex(SECOND_COLUMN))
+                    val breed = cursor.getString(cursor.getColumnIndex(THIRD_COLUMN))
+                    val age = cursor.getInt(cursor.getColumnIndex(FOURTH_COLUMN))
+                    val created = cursor.getLong(cursor.getColumnIndex(FIFTH_COLUMN))
+                    val person = Cat(id, name, breed, age, created)
+                    listOfTopics.add(person)
+                } while (cursor.moveToNext())
+            }
+            cursor.close()
         }
     }
 
-    suspend fun save(cat: Cat) {
-        val values = ContentValues()
-        values.put(SECOND_COLUMN, cat.name)
-        values.put(THIRD_COLUMN, cat.breed)
-        values.put(FOURTH_COLUMN, cat.age)
-        values.put(FIFTH_COLUMN, cat.created)
-        writableDatabase.insert(TABLE_NAME, null, values)
-        updateList()
-    }
-
-    suspend fun delete(cat: Cat): Int {
-        writableDatabase.delete(TABLE_NAME, "id = ${cat.id}", null)
-        updateList()
-        return 1
-    }
-
-    suspend fun update(cat: Cat) {
-        val updatedValues = ContentValues()
-        updatedValues.put(SECOND_COLUMN, cat.name)
-        updatedValues.put(THIRD_COLUMN, cat.breed)
-        updatedValues.put(FOURTH_COLUMN, cat.age)
-        val where = "id = ${cat.id}"
-        writableDatabase.update(TABLE_NAME, updatedValues, where, null)
-        updateList()
+    private fun getCursorSortName(sortList: String) {
+        return readableDatabase.rawQuery("SELECT * FROM $TABLE_NAME ORDER BY name", null).use { cursor ->
+            Log.d("getTasks cursor", sortList)
+            if (cursor.moveToFirst()) {
+                do {
+                    val id = cursor.getInt(cursor.getColumnIndex(FIRST_COLUMN))
+                    val name = cursor.getString(cursor.getColumnIndex(SECOND_COLUMN))
+                    val breed = cursor.getString(cursor.getColumnIndex(THIRD_COLUMN))
+                    val age = cursor.getInt(cursor.getColumnIndex(FOURTH_COLUMN))
+                    val created = cursor.getLong(cursor.getColumnIndex(FIFTH_COLUMN))
+                    val person = Cat(id, name, breed, age, created)
+                    listOfTopics.add(person)
+                } while (cursor.moveToNext())
+            }
+            cursor.close()
+        }
     }
 
     companion object {
