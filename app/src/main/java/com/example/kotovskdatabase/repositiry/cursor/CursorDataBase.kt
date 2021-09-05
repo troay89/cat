@@ -70,12 +70,12 @@ class CursorDataBase(context: Context) : RequestsDao, SQLiteOpenHelper(
         }
     }
 
-    @ExperimentalCoroutinesApi
+
     override fun getTasks(typeSort: String) = flow<List<Cat>> {
         typeSorting = typeSort
         updateList(typeSorting)
         emit(listOfTopics)
-        listenListCat().collect() {
+        listenListCat().collect {
             Log.d("getAll", it.size.toString())
             emit(it)
         }
@@ -110,7 +110,7 @@ class CursorDataBase(context: Context) : RequestsDao, SQLiteOpenHelper(
 
 
     private fun updateList(sortList: String): List<Cat> {
-        listOfTopics = mutableListOf<Cat>()
+        listOfTopics = mutableListOf()
         when (sortList) {
             "BY_NAME" -> getCursorSortName(sortList)
             "BY_AGE" -> getCursorSortAge(sortList)

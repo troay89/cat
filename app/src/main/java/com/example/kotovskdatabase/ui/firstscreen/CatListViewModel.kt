@@ -12,7 +12,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class CatListViewModel(val preferencesManager: PreferencesManager) : ViewModel() {
+class CatListViewModel(private val preferencesManager: PreferencesManager) : ViewModel() {
 
     private fun chooseRepository() = if (preferencesManager.getKeyBD() == ChooseBD.BY_ROOM.name) {
         Log.d("init first", "ROOM")
@@ -27,12 +27,12 @@ class CatListViewModel(val preferencesManager: PreferencesManager) : ViewModel()
     val catEvent: Flow<CatEvent> = catEventChannel.receiveAsFlow()
 
     @ExperimentalCoroutinesApi
-    private val preferencesFlow: Flow<String> = preferencesManager.orderFlow2
+    private val preferencesFlow: Flow<FilterPreferences> = preferencesManager.orderFlow2
 
     @ExperimentalCoroutinesApi
     private val catFlow:Flow<List<Cat>> =
         preferencesFlow.flatMapLatest { filterPreferences ->
-        chooseRepository().getTasks(preferencesManager.getKeySort())
+        chooseRepository().getTasks(filterPreferences.sortOrder.name)
     }
 
     @ExperimentalCoroutinesApi

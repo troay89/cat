@@ -17,21 +17,17 @@ enum class SortOrder { BY_NAME, BY_AGE, BY_DATE }
 
 enum class ChooseBD { BY_ROOM, BY_CURSOR }
 
+data class FilterPreferences(val sortOrder: SortOrder, val chooseBD: ChooseBD)
 
-class PreferencesManager(
-    private val context: Context
-) {
+class PreferencesManager(private val context: Context) {
 
     private val sharedPreferences: SharedPreferences by lazy {
-        context.getSharedPreferences(
-            PREFERENCES_NAME,
-            Context.MODE_PRIVATE
-        )
+        context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
     }
 
 
     @ExperimentalCoroutinesApi
-    val orderFlow2: Flow<String>
+    val orderFlow2: Flow<FilterPreferences>
         get() = sharedPreferences.getStringFlow(SORT_KEY)
 
 
@@ -61,14 +57,25 @@ private object PreferencesKeys {
     const val API_BD_KEY = "API_BD_KEY"
 }
 
+lateinit var sort: SortOrder
+lateinit var api: ChooseBD
+
 @ExperimentalCoroutinesApi
 fun SharedPreferences.getStringFlow(key: String, defaultValue: String = SortOrder.BY_DATE.name) =
-    callbackFlow<String> {
+    callbackFlow<FilterPreferences> {
 
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             getString(key, defaultValue)?.let {
-                Log.d("getStringFlow1", it)
-                offer(it)
+
+                if (key == SORT_KEY){
+                    sort = SortOrder.valueOf(it)
+                }else {
+                    Log.d("getStringFlow1", it)
+                    api = ChooseBD.valueOf(it)
+                }
+
+                val filterPreferences = FilterPreferences(sort, api)
+                offer(filterPreferences)
             }
         }
 
@@ -76,8 +83,13 @@ fun SharedPreferences.getStringFlow(key: String, defaultValue: String = SortOrde
 
         runCatching {
             getString(key, defaultValue)?.let {
-                Log.d("getStringFlow2", it)
-                offer(it)
+                if (key == SORT_KEY){
+                    sort = SortOrder.valueOf(it)
+                }else {
+                    api = ChooseBD.valueOf(it)
+                }
+                val filterPreferences = FilterPreferences(sort, api)
+                offer(filterPreferences)
             }
         }
 
