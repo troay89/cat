@@ -28,7 +28,7 @@ class PreferencesManager(private val context: Context) {
 
     @ExperimentalCoroutinesApi
     val orderFlow2: Flow<FilterPreferences>
-        get() = sharedPreferences.getStringFlow(SORT_KEY)
+        get() = sharedPreferences.getStringFlow(SORT_KEY, API_BD_KEY)
 
 
     fun updateSortOrder(sortOrder: SortOrder) {
@@ -61,15 +61,18 @@ lateinit var sort: SortOrder
 lateinit var api: ChooseBD
 
 @ExperimentalCoroutinesApi
-fun SharedPreferences.getStringFlow(key: String, defaultValue: String = SortOrder.BY_DATE.name) =
-    callbackFlow<FilterPreferences> {
+fun SharedPreferences.getStringFlow(
+    keySort: String, keyChooseBD: String,
+    defaultValueSort: String = SortOrder.BY_DATE.name,
+    defaultValueApiBd: String = ChooseBD.BY_ROOM.name,
+    ) = callbackFlow<FilterPreferences> {
 
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            getString(key, defaultValue)?.let {
+            getString(key, defaultValueSort)?.let {
 
-                if (key == SORT_KEY){
+                if (key == SORT_KEY) {
                     sort = SortOrder.valueOf(it)
-                }else {
+                } else {
                     Log.d("getStringFlow1", it)
                     api = ChooseBD.valueOf(it)
                 }
@@ -82,16 +85,24 @@ fun SharedPreferences.getStringFlow(key: String, defaultValue: String = SortOrde
         registerOnSharedPreferenceChangeListener(listener)
 
         runCatching {
-            getString(key, defaultValue)?.let {
-                if (key == SORT_KEY){
+            getString(keySort, defaultValueSort)?.let {
+                if (keySort == SORT_KEY) {
                     sort = SortOrder.valueOf(it)
-                }else {
-                    api = ChooseBD.valueOf(it)
+                    Log.d("runCatching1", sort.name)
+
                 }
-                val filterPreferences = FilterPreferences(sort, api)
-                offer(filterPreferences)
             }
+
+            getString(keyChooseBD, defaultValueApiBd)?.let {
+                if (keyChooseBD == API_BD_KEY) {
+                    api = ChooseBD.valueOf(it)
+                    Log.d("runCatching1", api.name)
+                }
+            }
+            val filterPreferences = FilterPreferences(sort, api)
+            offer(filterPreferences)
         }
+
 
         awaitClose {
             unregisterOnSharedPreferenceChangeListener(listener)

@@ -32,6 +32,8 @@ class CatListViewModel(private val preferencesManager: PreferencesManager) : Vie
     @ExperimentalCoroutinesApi
     private val catFlow:Flow<List<Cat>> =
         preferencesFlow.flatMapLatest { filterPreferences ->
+            Log.d("catFlow", filterPreferences.sortOrder.name)
+            Log.d("catFlow", filterPreferences.chooseBD.name)
         chooseRepository().getTasks(filterPreferences.sortOrder.name)
     }
 
