@@ -1,11 +1,12 @@
 package com.example.kotovskdatabase.ui.firstscreen
 
-//import com.example.kotovskdatabase.ui.factory
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -21,11 +22,9 @@ import kotlinx.coroutines.flow.collect
 class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
 
     private val viewModel: CatListViewModel by viewModels { factory() }
-//    { ViewModelFactory(this, requireContext().applicationContext as App) }
 
     private var _binding: CatListFragmentBinding? = null
     private val binding get() = _binding!!
-    lateinit var  catAdapter: CatAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -38,7 +37,7 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        catAdapter = CatAdapter(this)
+        val catAdapter = CatAdapter(this)
 
 
         binding.apply {
@@ -49,9 +48,10 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
                 SwipeHelper(viewModel::onTaskSwiped).attachToRecyclerView(recyclerViewCats)
             }
 
-//            viewModel.cats.observe(viewLifecycleOwner) {
-            catAdapter.submitList(viewModel.chooseRepository().getTasks(viewModel.preferencesKey.getKeySort()))
-//            }
+            viewModel.cats.observe(viewLifecycleOwner,  Observer {
+                Log.d("liveData", it.size.toString())
+                catAdapter.submitList(it)
+            })
 
             binding.fabAddCat.setOnClickListener {
                 viewModel.onAddNewCatClick()
@@ -64,26 +64,20 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
             viewModel.catEvent.collect { event ->
                 when (event) {
                     is CatListViewModel.CatEvent.NavigateToAddCatFragment -> {
-                        val action = CatListFragmentDirections.actionCatListFragmentToCatFragment(
-                            null,
-                            "Новый кот",
-                            viewModel.preferencesKey.getKeyBD()
-                        )
+                        val action = CatListFragmentDirections.actionCatListFragmentToCatFragment(null, "Новый кот", event.keyBd)
                         findNavController().navigate(action)
                     }
 
                     is CatListViewModel.CatEvent.ShowUndoDeleteTaskMessage -> {
-                        Snackbar.make(requireView(), "Кот удалён", Snackbar.LENGTH_LONG).show()
-                        catAdapter.submitList(viewModel.chooseRepository().getTasks(viewModel.preferencesKey.getKeySort()))
+                        Snackbar.make(requireView(), "Кот удалён", Snackbar.LENGTH_LONG)
+                            .setAction("ОТМЕНИТЬ") {
+                                viewModel.onUndoDeletedClick(event.cat)
+                            }.show()
                     }
 
                     is CatListViewModel.CatEvent.NavigateToEditTaskScreen -> {
                         val action =
-                            CatListFragmentDirections.actionCatListFragmentToCatFragment(
-                                event.cat,
-                                "Редактирование",
-                                viewModel.preferencesKey.getKeyBD()
-                            )
+                            CatListFragmentDirections.actionCatListFragmentToCatFragment(event.cat, "Редактирование", event.keyBd)
                         findNavController().navigate(action)
                     }
 
@@ -110,17 +104,14 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
         return when (item.itemId) {
             R.id.action_sort_by_name -> {
                 viewModel.onSortOrderSelected(SortOrder.BY_NAME)
-                catAdapter.submitList(viewModel.chooseRepository().getTasks(viewModel.preferencesKey.getKeySort()))
                 true
             }
             R.id.action_sort_by_age -> {
                 viewModel.onSortOrderSelected(SortOrder.BY_AGE)
-                catAdapter.submitList(viewModel.chooseRepository().getTasks(viewModel.preferencesKey.getKeySort()))
                 true
             }
             R.id.action_sort_by_date -> {
                 viewModel.onSortOrderSelected(SortOrder.BY_DATE)
-                catAdapter.submitList(viewModel.chooseRepository().getTasks(viewModel.preferencesKey.getKeySort()))
                 true
             }
 

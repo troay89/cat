@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.kotovskdatabase.App
 import com.example.kotovskdatabase.repositiry.Repository
 import com.example.kotovskdatabase.repositiry.cursor.CursorDataBase
 import com.example.kotovskdatabase.repositiry.entity.Cat
@@ -22,10 +21,10 @@ class CatViewModel(
     val cat: Cat? = state.get<Cat>("cat")
 
     private fun chooseRepository() = if (state.get<String>("ApiBd") == ChooseBD.BY_ROOM.name) {
-        Log.d("init", "ROOM")
+        Log.d("init second", "ROOM")
         Repository.get()
     } else {
-        Log.d("init", "COURSE")
+        Log.d("init second", "COURSE")
         CursorDataBase.get()
     }
 
@@ -57,9 +56,8 @@ class CatViewModel(
             val newCat = Cat(name = catName, breed = catBreed, age = catAge.toString().toInt())
             createCat(newCat)
         }
-        if (cat != null) {
-            val updateCat =
-                cat.copy(name = catName, breed = catBreed, age = catAge.toString().toInt())
+        if(cat != null){
+            val updateCat = cat.copy(name = catName, breed = catBreed, age = catAge.toString().toInt())
             updateCat(updateCat)
         }
     }

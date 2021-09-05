@@ -8,16 +8,16 @@ import kotlinx.coroutines.flow.Flow
 interface CatsDao {
 
     @Query("SELECT * FROM cats_table")
-    fun getAll(): List<Cat>
+    fun getAll(): Flow<List<Cat>>
 
     @Query("SELECT * FROM cats_table ORDER BY name")
-    fun getTasksSortedByName(): List<Cat>
+    fun getTasksSortedByName(): Flow<List<Cat>>
 
     @Query("SELECT * FROM cats_table ORDER BY age")
-    fun getTasksSortedByBreed(): List<Cat>
+    fun getTasksSortedByAge(): Flow<List<Cat>>
 
     @Query("SELECT * FROM cats_table ORDER BY created")
-    fun getTasksSortedByDateCreated(): List<Cat>
+    fun getTasksSortedByDateCreated(): Flow<List<Cat>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun add(cat: Cat)
