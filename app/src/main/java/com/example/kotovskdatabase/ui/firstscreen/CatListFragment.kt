@@ -1,59 +1,47 @@
 package com.example.kotovskdatabase.ui.firstscreen
 
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.kotovskdatabase.R
 import com.example.kotovskdatabase.databinding.CatListFragmentBinding
-import com.example.kotovskdatabase.repositiry.entity.Cat
 import com.example.kotovskdatabase.ui.factory
 import com.example.kotovskdatabase.ui.firstscreen.adapter.CatAdapter
 import com.example.kotovskdatabase.ui.firstscreen.adapter.SwipeHelper
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.collect
 
-class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
+class CatListFragment : Fragment() {
 
     private val viewModel: CatListViewModel by viewModels { factory() }
 
-    private var _binding: CatListFragmentBinding? = null
-    private val binding get() = _binding!!
+    private var binding: CatListFragmentBinding? = null
+
+    private val catAdapter = CatAdapter{ cat ->
+        viewModel.onCatSelected(cat)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        _binding = CatListFragmentBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+    ): View = CatListFragmentBinding.inflate(inflater).also { binding = it }.root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val catAdapter = CatAdapter(this)
+        customizationRecyclerView()
 
-
-        binding.apply {
-            recyclerViewCats.apply {
-                adapter = catAdapter
-                layoutManager = LinearLayoutManager(requireContext())
-                setHasFixedSize(true)
-                SwipeHelper(viewModel::onTaskSwiped).attachToRecyclerView(recyclerViewCats)
-            }
-
-            viewModel.cats.observe(viewLifecycleOwner,  Observer {
-                Log.d("liveData", it.size.toString())
+        views {
+            viewModel.cats.observe(viewLifecycleOwner, {
                 catAdapter.submitList(it)
             })
 
-            binding.fabAddCat.setOnClickListener {
+            fabAddCat.setOnClickListener {
                 viewModel.onAddNewCatClick()
             }
         }
@@ -62,29 +50,7 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
 //            https://habr.com/ru/company/otus/blog/564050/
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.catEvent.collect { event ->
-                when (event) {
-                    is CatListViewModel.CatEvent.NavigateToAddCatFragment -> {
-                        val action = CatListFragmentDirections.actionCatListFragmentToCatFragment(null, "Новый кот", event.keyBd)
-                        findNavController().navigate(action)
-                    }
-
-                    is CatListViewModel.CatEvent.ShowUndoDeleteTaskMessage -> {
-                        Snackbar.make(requireView(), "Кот удалён", Snackbar.LENGTH_LONG)
-                            .setAction("ОТМЕНИТЬ") {
-                                viewModel.onUndoDeletedClick(event.cat)
-                            }.show()
-                    }
-
-                    is CatListViewModel.CatEvent.NavigateToEditTaskScreen -> {
-                        val action =
-                            CatListFragmentDirections.actionCatListFragmentToCatFragment(event.cat, "Редактирование", event.keyBd)
-                        findNavController().navigate(action)
-                    }
-
-                    is CatListViewModel.CatEvent.ShowTaskSavedConfirmationMessage -> {
-                        Snackbar.make(requireView(), event.msg, Snackbar.LENGTH_SHORT).show()
-                    }
-                }
+                eventImplementation(event)
             }
         }
 
@@ -116,14 +82,14 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
             }
 
             R.id.action_room -> {
-                viewModel.choosingApiBD(ChooseBD.BY_ROOM )
-                Snackbar.make(requireView(), "вы используете room", Snackbar.LENGTH_SHORT).show()
+                viewModel.choosingApiBD(ChooseBD.FROM_ROOM)
+                Snackbar.make(requireView(), R.string.use_room, Snackbar.LENGTH_SHORT).show()
                 true
             }
 
             R.id.action_cursor -> {
-                viewModel.choosingApiBD(ChooseBD.BY_CURSOR)
-                Snackbar.make(requireView(), "вы используете cursor", Snackbar.LENGTH_SHORT).show()
+                viewModel.choosingApiBD(ChooseBD.FROM_CURSOR)
+                Snackbar.make(requireView(), R.string.use_cursor, Snackbar.LENGTH_SHORT).show()
                 true
             }
 
@@ -133,10 +99,53 @@ class CatListFragment : Fragment(), CatAdapter.OnItemClickListener {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        binding = null
     }
 
-    override fun onItemClick(cat: Cat) {
-        viewModel.onCatSelected(cat)
+    private fun customizationRecyclerView() {
+        views {
+            recyclerViewCats.apply {
+                adapter = catAdapter
+                layoutManager = LinearLayoutManager(requireContext())
+                setHasFixedSize(true)
+                SwipeHelper(viewModel::onTaskSwiped).attachToRecyclerView(recyclerViewCats)
+            }
+        }
     }
+
+    private fun eventImplementation(event: CatListViewModel.CatEvent) {
+        when (event) {
+            is CatListViewModel.CatEvent.NavigateToAddCatFragment -> {
+                val action = CatListFragmentDirections.actionCatListFragmentToCatFragment(
+                    null,
+                    getString(R.string.cat_new),
+                    event.keyBd
+                )
+                findNavController().navigate(action)
+            }
+
+            is CatListViewModel.CatEvent.ShowUndoDeleteTaskMessage -> {
+                Snackbar.make(requireView(), R.string.cat_delete, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.cancel) {
+                        viewModel.onUndoDeletedClick(event.cat)
+                    }.show()
+            }
+
+            is CatListViewModel.CatEvent.NavigateToEditTaskScreen -> {
+                val action =
+                    CatListFragmentDirections.actionCatListFragmentToCatFragment(
+                        event.cat,
+                        getString(R.string.editing),
+                        event.keyBd
+                    )
+                findNavController().navigate(action)
+            }
+
+            is CatListViewModel.CatEvent.ShowTaskSavedConfirmationMessage -> {
+                Snackbar.make(requireView(), event.msg, Snackbar.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun <T> views(block: CatListFragmentBinding.() -> T): T? = binding?.block()
 }

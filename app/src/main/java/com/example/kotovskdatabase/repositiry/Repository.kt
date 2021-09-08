@@ -8,17 +8,17 @@ import kotlinx.coroutines.flow.Flow
 
 class Repository private constructor(context: Context) : RequestsDao {
 
-    private val dao = DatabaseRoom.create(context).catsDao
+    private val dao = DatabaseRoom.create(context).repositoryImpl
 
-    override fun getTasks(typeSort: String): Flow<List<Cat>> =
+    override fun getListCats(typeSort: String): Flow<List<Cat>> =
         when (typeSort) {
-            "BY_NAME" -> dao.getTasksSortedByName()
+            "BY_NAME" -> dao.getListCatsSortedByName()
 
-            "BY_AGE" -> dao.getTasksSortedByAge()
+            "BY_AGE" -> dao.getListCatsSortedByAge()
 
-            "BY_DATE" -> dao.getTasksSortedByDateCreated()
+            "BY_DATE" -> dao.getListCatsSortedByDateCreated()
 
-            else -> dao.getTasksSortedByDateCreated()
+            else -> dao.getListCatsSortedByDateCreated()
     }
 
     override suspend fun save(cat: Cat) = dao.add(cat)
@@ -38,7 +38,7 @@ class Repository private constructor(context: Context) : RequestsDao {
         }
 
         fun get(): Repository =
-            INSTANCE ?: throw IllegalStateException("CrimeRepository must be initialized")
+            INSTANCE ?: throw IllegalStateException("RoomRepository must be initialized")
 
     }
 }

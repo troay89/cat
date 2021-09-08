@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface RequestsDao {
 
-    fun getTasks(typeSort: String): Flow<List<Cat>>
+    fun getListCats(typeSort: String): Flow<List<Cat>>
 
     suspend fun save(cat: Cat)
 

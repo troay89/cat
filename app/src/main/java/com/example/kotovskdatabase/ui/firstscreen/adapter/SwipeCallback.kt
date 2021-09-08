@@ -19,5 +19,6 @@ class SwipeCallback(
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
         (viewHolder as? CatAdapter.CatViewHolder)?.item?.let { onSwiped(it) }
     }
-
 }
+
+class SwipeHelper(onSwiped: (Cat) -> Unit,): ItemTouchHelper(SwipeCallback(onSwiped))

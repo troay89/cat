@@ -12,4 +12,11 @@
     <string name="repository">выбор репоситория</string>
     <string name="room">Room</string>
     <string name="cursor">Cursor</string>
+    <string name="use_room">вы используете Room</string>
+    <string name="use_cursor">вы используете Cursor</string>
+    <string name="not_all_fields">не все поля заполнены</string>
+    <string name="cat_delete">Кот удалён</string>
+    <string name="cat_new">Новый кот</string>
+    <string name="cancel">ОТМЕНИТЬ</string>
+    <string name="editing">Редактирование</string>
 </resources>

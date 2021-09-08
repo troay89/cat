@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.callbackFlow
 
 enum class SortOrder { BY_NAME, BY_AGE, BY_DATE }
 
-enum class ChooseBD { BY_ROOM, BY_CURSOR }
+enum class ChooseBD { FROM_ROOM, FROM_CURSOR }
 
 data class FilterPreferences(val sortOrder: SortOrder, val chooseBD: ChooseBD)
 
@@ -27,7 +27,7 @@ class PreferencesManager(private val context: Context) {
 
 
     @ExperimentalCoroutinesApi
-    val orderFlow2: Flow<FilterPreferences>
+    val orderFlow: Flow<FilterPreferences>
         get() = sharedPreferences.getStringFlow(SORT_KEY, API_BD_KEY)
 
 
@@ -43,10 +43,10 @@ class PreferencesManager(private val context: Context) {
         }
     }
 
-    fun getKeyBD() = sharedPreferences.getString(API_BD_KEY, ChooseBD.BY_ROOM.name)!!
+    fun getKeyBD() = sharedPreferences.getString(API_BD_KEY, ChooseBD.FROM_ROOM.name)!!
 
 
-    fun getKeySort() = sharedPreferences.getString(SORT_KEY, ChooseBD.BY_ROOM.name)!!
+//    fun getKeySort() = sharedPreferences.getString(SORT_KEY, ChooseBD.FROM_ROOM.name)!!
 
 
 }
@@ -64,7 +64,7 @@ lateinit var api: ChooseBD
 fun SharedPreferences.getStringFlow(
     keySort: String, keyChooseBD: String,
     defaultValueSort: String = SortOrder.BY_DATE.name,
-    defaultValueApiBd: String = ChooseBD.BY_ROOM.name,
+    defaultValueApiBd: String = ChooseBD.FROM_ROOM.name,
     ) = callbackFlow<FilterPreferences> {
 
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
@@ -73,10 +73,8 @@ fun SharedPreferences.getStringFlow(
                 if (key == SORT_KEY) {
                     sort = SortOrder.valueOf(it)
                 } else {
-                    Log.d("getStringFlow1", it)
                     api = ChooseBD.valueOf(it)
                 }
-
                 val filterPreferences = FilterPreferences(sort, api)
                 offer(filterPreferences)
             }
@@ -88,7 +86,7 @@ fun SharedPreferences.getStringFlow(
             getString(keySort, defaultValueSort)?.let {
                 if (keySort == SORT_KEY) {
                     sort = SortOrder.valueOf(it)
-                    Log.d("runCatching1", sort.name)
+                    Log.d("runCatching", sort.name)
 
                 }
             }
@@ -96,7 +94,7 @@ fun SharedPreferences.getStringFlow(
             getString(keyChooseBD, defaultValueApiBd)?.let {
                 if (keyChooseBD == API_BD_KEY) {
                     api = ChooseBD.valueOf(it)
-                    Log.d("runCatching1", api.name)
+                    Log.d("runCatching", api.name)
                 }
             }
             val filterPreferences = FilterPreferences(sort, api)

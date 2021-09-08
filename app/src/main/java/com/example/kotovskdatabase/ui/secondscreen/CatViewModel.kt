@@ -10,6 +10,11 @@ import com.example.kotovskdatabase.repositiry.entity.Cat
 import com.example.kotovskdatabase.ui.ADD_TASK_RESULT_OK
 import com.example.kotovskdatabase.ui.EDIT_TASK_RESULT_OK
 import com.example.kotovskdatabase.ui.firstscreen.ChooseBD
+import com.example.kotovskdatabase.ui.secondscreen.CatViewModel.CatViewModel.API_BD_KEY
+import com.example.kotovskdatabase.ui.secondscreen.CatViewModel.CatViewModel.CAT_KEY
+import com.example.kotovskdatabase.ui.secondscreen.CatViewModel.CatViewModel.CAT_AGE_KEY
+import com.example.kotovskdatabase.ui.secondscreen.CatViewModel.CatViewModel.CAT_BREED_KEY
+import com.example.kotovskdatabase.ui.secondscreen.CatViewModel.CatViewModel.CAT_NAME_KEY
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -18,9 +23,9 @@ class CatViewModel(
     private val state: SavedStateHandle,
 ) : ViewModel() {
 
-    val cat: Cat? = state.get<Cat>("cat")
+    val cat: Cat? = state.get<Cat>(CAT_KEY)
 
-    private fun chooseRepository() = if (state.get<String>("ApiBd") == ChooseBD.BY_ROOM.name) {
+    private fun chooseRepository() = if (state.get<String>(API_BD_KEY) == ChooseBD.FROM_ROOM.name) {
         Log.d("init second", "ROOM")
         Repository.get()
     } else {
@@ -28,35 +33,35 @@ class CatViewModel(
         CursorDataBase.get()
     }
 
-    var catName = state.get<String>("catName") ?: cat?.name ?: ""
+    var catName = state.get<String>(CAT_NAME_KEY) ?: cat?.name ?: ""
         set(value) {
             field = value
-            state.set("catName", value)
+            state.set(CAT_NAME_KEY, value)
         }
 
-    var catBreed = state.get<String>("catBreed") ?: cat?.breed ?: ""
+    var catBreed = state.get<String>(CAT_BREED_KEY) ?: cat?.breed ?: ""
         set(value) {
             field = value
-            state.set("catBreed", value)
+            state.set(CAT_BREED_KEY, value)
         }
 
-    var catAge = state.get<String>("catAge") ?: cat?.age ?: ""
+    var catAge = state.get<String>(CAT_AGE_KEY) ?: cat?.age ?: ""
         set(value) {
             field = value
-            state.set("catAge", value)
+            state.set(CAT_AGE_KEY, value)
         }
 
 
     fun onSaveClick() {
         if (catName.isBlank() || catBreed.isBlank() || catAge.toString().isBlank()) {
-            showInvalidInputMessage("не все поля заполнены")
+            showInvalidInputMessage()
             return
         }
         if (cat == null) {
             val newCat = Cat(name = catName, breed = catBreed, age = catAge.toString().toInt())
             createCat(newCat)
         }
-        if(cat != null){
+        else{
             val updateCat = cat.copy(name = catName, breed = catBreed, age = catAge.toString().toInt())
             updateCat(updateCat)
         }
@@ -76,12 +81,20 @@ class CatViewModel(
         addEditCatEventChannel.send(AddEditCatEvent.NavigateBackWithResult(EDIT_TASK_RESULT_OK))
     }
 
-    private fun showInvalidInputMessage(text: String) = viewModelScope.launch {
-        addEditCatEventChannel.send(AddEditCatEvent.ShowInvalidInputMessage(text))
+    private fun showInvalidInputMessage() = viewModelScope.launch {
+        addEditCatEventChannel.send(AddEditCatEvent.ShowInvalidInputMessage)
     }
 
     sealed class AddEditCatEvent {
-        data class ShowInvalidInputMessage(val msg: String) : AddEditCatEvent()
+        object ShowInvalidInputMessage : AddEditCatEvent()
         data class NavigateBackWithResult(val result: Int) : AddEditCatEvent()
+    }
+
+    private object CatViewModel {
+        const val CAT_KEY = "cat"
+        const val API_BD_KEY = "ApiBd"
+        const val CAT_NAME_KEY = "catName"
+        const val CAT_BREED_KEY = "catBreed"
+        const val CAT_AGE_KEY = "catAge"
     }
 }

@@ -10,12 +10,12 @@ import com.example.kotovskdatabase.databinding.ItemCatBinding
 
 import com.example.kotovskdatabase.repositiry.entity.Cat
 
-class CatAdapter(private val listener: OnItemClickListener)
+class CatAdapter(private val onClick: (Cat) -> Unit)
     : ListAdapter<Cat, CatAdapter.CatViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CatViewHolder {
         val binding = ItemCatBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return CatViewHolder(binding)
+        return CatViewHolder(binding, onClick)
     }
 
     override fun onBindViewHolder(holder: CatViewHolder, position: Int) {
@@ -24,7 +24,7 @@ class CatAdapter(private val listener: OnItemClickListener)
     }
 
 
-    inner class CatViewHolder(private val binding: ItemCatBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class CatViewHolder(private val binding: ItemCatBinding, onClick: (Cat) -> Unit) : RecyclerView.ViewHolder(binding.root) {
 
         var item: Cat? = null
             private set
@@ -34,8 +34,8 @@ class CatAdapter(private val listener: OnItemClickListener)
                 root.setOnClickListener {
                     val position = adapterPosition
                     if (position != RecyclerView.NO_POSITION) {
-                        val task = getItem(position)
-                        listener.onItemClick(task)
+                        val cat = getItem(position)
+                        onClick(cat)
                     }
                 }
             }
@@ -60,9 +60,5 @@ class CatAdapter(private val listener: OnItemClickListener)
 
         override fun areContentsTheSame(oldItem: Cat, newItem: Cat): Boolean =
             oldItem == newItem
-    }
-
-    interface OnItemClickListener {
-        fun onItemClick(cat: Cat)
     }
 }
