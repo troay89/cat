@@ -94,10 +94,6 @@ class CatListFragment : Fragment() {
                 SwipeHelper(viewModel::onTaskSwiped).attachToRecyclerView(recyclerViewCats)
             }
 
-            viewModel.cats.observe(viewLifecycleOwner, {
-                catAdapter.submitList(it)
-            })
-
             fabAddCat.setOnClickListener {
                 viewModel.onAddNewCatClick()
             }
@@ -105,6 +101,11 @@ class CatListFragment : Fragment() {
     }
 
     private fun eventImplementation() {
+
+        viewModel.cats.observe(viewLifecycleOwner, {
+            catAdapter.submitList(it)
+        })
+
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.catEvent.collect { event ->
                 setEvent(event)

@@ -6,7 +6,7 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
-import com.example.kotovskdatabase.repositiry.RequestsDao
+import com.example.kotovskdatabase.repositiry.Repository
 import com.example.kotovskdatabase.repositiry.entity.Cat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
@@ -31,7 +31,7 @@ private const val CREATE_TABLE_SQL = "CREATE TABLE IF NOT EXISTS $TABLE_NAME" +
 
 typealias CatListener = (List<Cat>) -> Unit
 
-class CursorDataBase(context: Context) : RequestsDao, SQLiteOpenHelper(
+class CursorDataBase(context: Context) : Repository, SQLiteOpenHelper(
     context,
     CATS_DATABASE,
     null,

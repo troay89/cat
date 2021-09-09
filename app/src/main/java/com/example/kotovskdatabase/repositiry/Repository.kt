@@ -3,7 +3,7 @@ package com.example.kotovskdatabase.repositiry
 import com.example.kotovskdatabase.repositiry.entity.Cat
 import kotlinx.coroutines.flow.Flow
 
-interface RequestsDao {
+interface Repository {
 
     fun getListCats(typeSort: String): Flow<List<Cat>>
 

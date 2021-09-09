@@ -5,7 +5,7 @@ import com.example.kotovskdatabase.repositiry.entity.Cat
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface Repository {
+interface CatsDao {
 
     @Query("SELECT * FROM cats_table")
     fun getAll(): Flow<List<Cat>>

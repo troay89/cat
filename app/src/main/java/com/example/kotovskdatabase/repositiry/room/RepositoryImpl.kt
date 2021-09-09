@@ -1,14 +1,14 @@
-package com.example.kotovskdatabase.repositiry
+package com.example.kotovskdatabase.repositiry.room
 
 import android.content.Context
+import com.example.kotovskdatabase.repositiry.Repository
 import com.example.kotovskdatabase.repositiry.entity.Cat
-import com.example.kotovskdatabase.repositiry.room.DatabaseRoom
 import kotlinx.coroutines.flow.Flow
 
 
-class RepositoryImpl private constructor(context: Context) : RequestsDao {
+class RepositoryImpl private constructor(context: Context) : Repository {
 
-    private val dao = DatabaseRoom.create(context).repository
+    private val dao = DatabaseRoom.create(context).catsDao
 
     override fun getListCats(typeSort: String): Flow<List<Cat>> =
         when (typeSort) {
