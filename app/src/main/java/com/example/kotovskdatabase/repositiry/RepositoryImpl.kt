@@ -6,9 +6,9 @@ import com.example.kotovskdatabase.repositiry.room.DatabaseRoom
 import kotlinx.coroutines.flow.Flow
 
 
-class Repository private constructor(context: Context) : RequestsDao {
+class RepositoryImpl private constructor(context: Context) : RequestsDao {
 
-    private val dao = DatabaseRoom.create(context).repositoryImpl
+    private val dao = DatabaseRoom.create(context).repository
 
     override fun getListCats(typeSort: String): Flow<List<Cat>> =
         when (typeSort) {
@@ -29,15 +29,15 @@ class Repository private constructor(context: Context) : RequestsDao {
 
     companion object {
 
-        private var INSTANCE: Repository? = null
+        private var INSTANCE: RepositoryImpl? = null
 
         fun initialize(context: Context) {
             if (INSTANCE == null) {
-                INSTANCE = Repository(context)
+                INSTANCE = RepositoryImpl(context)
             }
         }
 
-        fun get(): Repository =
+        fun get(): RepositoryImpl =
             INSTANCE ?: throw IllegalStateException("RoomRepository must be initialized")
 
     }

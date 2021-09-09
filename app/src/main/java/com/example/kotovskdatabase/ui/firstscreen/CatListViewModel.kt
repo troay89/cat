@@ -2,7 +2,7 @@ package com.example.kotovskdatabase.ui.firstscreen
 
 import android.util.Log
 import androidx.lifecycle.*
-import com.example.kotovskdatabase.repositiry.Repository
+import com.example.kotovskdatabase.repositiry.RepositoryImpl
 import com.example.kotovskdatabase.repositiry.cursor.CursorDataBase
 import com.example.kotovskdatabase.repositiry.entity.Cat
 import com.example.kotovskdatabase.ui.ADD_TASK_RESULT_OK
@@ -16,7 +16,7 @@ class CatListViewModel(private val preferencesManager: PreferencesManager) : Vie
 
     private fun chooseRepository() = if (preferencesManager.getKeyBD() == ChooseBD.FROM_ROOM.name) {
         Log.d("init first", "ROOM")
-        Repository.get()
+        RepositoryImpl.get()
     } else {
         Log.d("init first", "COURSE")
         CursorDataBase.get()

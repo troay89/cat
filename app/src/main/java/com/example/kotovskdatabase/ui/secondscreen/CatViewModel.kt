@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.kotovskdatabase.repositiry.Repository
+import com.example.kotovskdatabase.repositiry.RepositoryImpl
 import com.example.kotovskdatabase.repositiry.cursor.CursorDataBase
 import com.example.kotovskdatabase.repositiry.entity.Cat
 import com.example.kotovskdatabase.ui.ADD_TASK_RESULT_OK
@@ -27,7 +27,7 @@ class CatViewModel(
 
     private fun chooseRepository() = if (state.get<String>(API_BD_KEY) == ChooseBD.FROM_ROOM.name) {
         Log.d("init second", "ROOM")
-        Repository.get()
+        RepositoryImpl.get()
     } else {
         Log.d("init second", "COURSE")
         CursorDataBase.get()

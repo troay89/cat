@@ -22,7 +22,7 @@ class CatListFragment : Fragment() {
 
     private var binding: CatListFragmentBinding? = null
 
-    private val catAdapter = CatAdapter{ cat ->
+    private val catAdapter = CatAdapter { cat ->
         viewModel.onCatSelected(cat)
     }
 
@@ -34,25 +34,8 @@ class CatListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        customizationRecyclerView()
-
-        views {
-            viewModel.cats.observe(viewLifecycleOwner, {
-                catAdapter.submitList(it)
-            })
-
-            fabAddCat.setOnClickListener {
-                viewModel.onAddNewCatClick()
-            }
-        }
-
-
-//            https://habr.com/ru/company/otus/blog/564050/
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            viewModel.catEvent.collect { event ->
-                eventImplementation(event)
-            }
-        }
+        populateRecyclerViewAndListener()
+        eventImplementation()
 
         setFragmentResultListener("add_edit_request") { _, bundle ->
             val result = bundle.getInt("add_edit_result")
@@ -102,7 +85,7 @@ class CatListFragment : Fragment() {
         binding = null
     }
 
-    private fun customizationRecyclerView() {
+    private fun populateRecyclerViewAndListener() {
         views {
             recyclerViewCats.apply {
                 adapter = catAdapter
@@ -110,10 +93,26 @@ class CatListFragment : Fragment() {
                 setHasFixedSize(true)
                 SwipeHelper(viewModel::onTaskSwiped).attachToRecyclerView(recyclerViewCats)
             }
+
+            viewModel.cats.observe(viewLifecycleOwner, {
+                catAdapter.submitList(it)
+            })
+
+            fabAddCat.setOnClickListener {
+                viewModel.onAddNewCatClick()
+            }
         }
     }
 
-    private fun eventImplementation(event: CatListViewModel.CatEvent) {
+    private fun eventImplementation() {
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewModel.catEvent.collect { event ->
+                setEvent(event)
+            }
+        }
+    }
+
+    private fun setEvent(event: CatListViewModel.CatEvent) {
         when (event) {
             is CatListViewModel.CatEvent.NavigateToAddCatFragment -> {
                 val action = CatListFragmentDirections.actionCatListFragmentToCatFragment(

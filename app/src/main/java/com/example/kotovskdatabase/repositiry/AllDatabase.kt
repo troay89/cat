@@ -1,8 +1,8 @@
 package com.example.kotovskdatabase.repositiry
 
-import com.example.kotovskdatabase.repositiry.room.RepositoryImpl
+import com.example.kotovskdatabase.repositiry.room.Repository
 
 interface AllDatabase {
 
-    val repositoryImpl: RepositoryImpl
+    val repository: Repository
 }
