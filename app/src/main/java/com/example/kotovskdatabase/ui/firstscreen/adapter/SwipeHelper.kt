@@ -2,10 +2,11 @@ package com.example.kotovskdatabase.ui.firstscreen.adapter
 
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.example.kotovskdatabase.repositiry.entity.Cat
+import com.example.kotovskdatabase.domain.model.CatDomain
+import com.example.kotovskdatabase.repositiry.entity.CatEntity
 
 class SwipeCallback(
-    private val onSwiped: (Cat) -> Unit,
+    private val onSwiped: (CatDomain) -> Unit,
 ) : ItemTouchHelper.SimpleCallback(
     0,
     ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
@@ -21,4 +22,4 @@ class SwipeCallback(
     }
 }
 
-class SwipeHelper(onSwiped: (Cat) -> Unit,): ItemTouchHelper(SwipeCallback(onSwiped))
+class SwipeHelper(onSwiped: (CatDomain) -> Unit,): ItemTouchHelper(SwipeCallback(onSwiped))

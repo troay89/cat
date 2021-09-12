@@ -10,7 +10,7 @@ import java.text.DateFormat
 @Entity(tableName = "cats_table")
 
 @Parcelize
-data class Cat(
+data class CatEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val name: String,

@@ -7,11 +7,12 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.kotovskdatabase.databinding.ItemCatBinding
+import com.example.kotovskdatabase.domain.model.CatDomain
 
-import com.example.kotovskdatabase.repositiry.entity.Cat
+import com.example.kotovskdatabase.repositiry.entity.CatEntity
 
-class CatAdapter(private val onClick: (Cat) -> Unit)
-    : ListAdapter<Cat, CatAdapter.CatViewHolder>(DiffCallback()) {
+class CatAdapter(private val onClick: (CatDomain) -> Unit)
+    : ListAdapter<CatDomain, CatAdapter.CatViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CatViewHolder {
         val binding = ItemCatBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -24,9 +25,9 @@ class CatAdapter(private val onClick: (Cat) -> Unit)
     }
 
 
-    inner class CatViewHolder(private val binding: ItemCatBinding, onClick: (Cat) -> Unit) : RecyclerView.ViewHolder(binding.root) {
+    inner class CatViewHolder(private val binding: ItemCatBinding, onClick: (CatDomain) -> Unit) : RecyclerView.ViewHolder(binding.root) {
 
-        var item: Cat? = null
+        var item: CatDomain? = null
             private set
 
         init {
@@ -41,9 +42,9 @@ class CatAdapter(private val onClick: (Cat) -> Unit)
             }
         }
 
-        fun bind(cat: Cat) {
+        fun bind(catDomain: CatDomain) {
 
-            this.item = cat
+            this.item = catDomain
 
             binding.apply {
                 nameList.text = item?.name
@@ -53,12 +54,12 @@ class CatAdapter(private val onClick: (Cat) -> Unit)
         }
     }
 
-    class DiffCallback: DiffUtil.ItemCallback<Cat>() {
-        override fun areItemsTheSame(oldItem: Cat, newItem: Cat) =
+    class DiffCallback: DiffUtil.ItemCallback<CatDomain>() {
+        override fun areItemsTheSame(oldItem: CatDomain, newItem: CatDomain) =
             oldItem.id == newItem.id
 
 
-        override fun areContentsTheSame(oldItem: Cat, newItem: Cat): Boolean =
+        override fun areContentsTheSame(oldItem: CatDomain, newItem: CatDomain): Boolean =
             oldItem == newItem
     }
 }

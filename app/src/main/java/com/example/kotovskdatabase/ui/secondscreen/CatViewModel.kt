@@ -4,9 +4,12 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.kotovskdatabase.domain.model.CatDomain
+import com.example.kotovskdatabase.domain.usecase.SaveCatUseCase
+import com.example.kotovskdatabase.domain.usecase.UpdateCatUseCase
 import com.example.kotovskdatabase.repositiry.room.RepositoryImpl
 import com.example.kotovskdatabase.repositiry.cursor.CursorDataBase
-import com.example.kotovskdatabase.repositiry.entity.Cat
+import com.example.kotovskdatabase.repositiry.entity.CatEntity
 import com.example.kotovskdatabase.ui.ADD_TASK_RESULT_OK
 import com.example.kotovskdatabase.ui.EDIT_TASK_RESULT_OK
 import com.example.kotovskdatabase.ui.firstscreen.ChooseBD
@@ -23,7 +26,7 @@ class CatViewModel(
     private val state: SavedStateHandle,
 ) : ViewModel() {
 
-    val cat: Cat? = state.get<Cat>(CAT_KEY)
+    val catDomain: CatDomain? = state.get<CatDomain>(CAT_KEY)
 
     private fun chooseRepository() = if (state.get<String>(API_BD_KEY) == ChooseBD.FROM_ROOM.name) {
         Log.d("init second", "ROOM")
@@ -33,19 +36,19 @@ class CatViewModel(
         CursorDataBase.get()
     }
 
-    var catName = state.get<String>(CAT_NAME_KEY) ?: cat?.name ?: ""
+    var catName = state.get<String>(CAT_NAME_KEY) ?: catDomain?.name ?: ""
         set(value) {
             field = value
             state.set(CAT_NAME_KEY, value)
         }
 
-    var catBreed = state.get<String>(CAT_BREED_KEY) ?: cat?.breed ?: ""
+    var catBreed = state.get<String>(CAT_BREED_KEY) ?: catDomain?.breed ?: ""
         set(value) {
             field = value
             state.set(CAT_BREED_KEY, value)
         }
 
-    var catAge = state.get<String>(CAT_AGE_KEY) ?: cat?.age ?: ""
+    var catAge = state.get<String>(CAT_AGE_KEY) ?: catDomain?.age ?: ""
         set(value) {
             field = value
             state.set(CAT_AGE_KEY, value)
@@ -57,12 +60,12 @@ class CatViewModel(
             showInvalidInputMessage()
             return
         }
-        if (cat == null) {
-            val newCat = Cat(name = catName, breed = catBreed, age = catAge.toString().toInt())
+        if (catDomain == null) {
+            val newCat = CatDomain(name = catName, breed = catBreed, age = catAge.toString().toInt(), id = null)
             createCat(newCat)
         }
         else{
-            val updateCat = cat.copy(name = catName, breed = catBreed, age = catAge.toString().toInt())
+            val updateCat = catDomain.copy(name = catName, breed = catBreed, age = catAge.toString().toInt())
             updateCat(updateCat)
         }
     }
@@ -71,13 +74,13 @@ class CatViewModel(
     private val addEditCatEventChannel = Channel<AddEditCatEvent>()
     val addEditCatEvent = addEditCatEventChannel.receiveAsFlow()
 
-    private fun createCat(newCat: Cat) = viewModelScope.launch {
-        chooseRepository().save(newCat)
+    private fun createCat(newCatDomain: CatDomain) = viewModelScope.launch {
+        SaveCatUseCase(chooseRepository()).execute(newCatDomain)
         addEditCatEventChannel.send(AddEditCatEvent.NavigateBackWithResult(ADD_TASK_RESULT_OK))
     }
 
-    private fun updateCat(updateCat: Cat) = viewModelScope.launch {
-        chooseRepository().update(updateCat)
+    private fun updateCat(updateCatDomain: CatDomain) = viewModelScope.launch {
+        UpdateCatUseCase(chooseRepository()).execute(updateCatDomain)
         addEditCatEventChannel.send(AddEditCatEvent.NavigateBackWithResult(EDIT_TASK_RESULT_OK))
     }
 

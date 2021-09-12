@@ -6,8 +6,10 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
-import com.example.kotovskdatabase.repositiry.Repository
-import com.example.kotovskdatabase.repositiry.entity.Cat
+import com.example.kotovskdatabase.domain.Repository
+import com.example.kotovskdatabase.domain.model.CatDomain
+import com.example.kotovskdatabase.repositiry.entity.CatEntity
+import com.example.kotovskdatabase.repositiry.mapper.DomainToEntity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -29,7 +31,7 @@ private const val CREATE_TABLE_SQL = "CREATE TABLE IF NOT EXISTS $TABLE_NAME" +
         " ($ID_COLUMN INTEGER PRIMARY KEY AUTOINCREMENT, $NAME_COLUMN VARCHAR(50), $BREED_COLUMN VARCHAR(50), " +
         "$AGE_COLUMN INTEGER, $CREATED_COLUMN INTEGER);"
 
-typealias CatListener = (List<Cat>) -> Unit
+typealias CatListener = (List<CatEntity>) -> Unit
 
 class CursorDataBase(context: Context) : Repository, SQLiteOpenHelper(
     context,
@@ -40,7 +42,7 @@ class CursorDataBase(context: Context) : Repository, SQLiteOpenHelper(
 
     private val listeners = mutableSetOf<CatListener>()
 
-    private var listOfTopics = mutableListOf<Cat>()
+    private var listOfTopics = mutableListOf<CatEntity>()
 
 
     private var typeSorting: String = "BY_DATE"
@@ -59,7 +61,7 @@ class CursorDataBase(context: Context) : Repository, SQLiteOpenHelper(
     }
 
     @ExperimentalCoroutinesApi
-    private fun listenListCat(): Flow<List<Cat>> = callbackFlow {
+    private fun listenListCat(): Flow<List<CatEntity>> = callbackFlow {
 
         val listener: CatListener = {
             trySend(it)
@@ -73,7 +75,8 @@ class CursorDataBase(context: Context) : Repository, SQLiteOpenHelper(
     }
 
 
-    override fun getListCats(typeSort: String) = flow<List<Cat>> {
+    override fun getListCats(typeSort: String) = flow<List<CatDomain>> {
+        Log.d("getListCats", "Я в курсорах")
         typeSorting = typeSort
         updateList(typeSorting)
         emit(listOfTopics)
@@ -82,34 +85,39 @@ class CursorDataBase(context: Context) : Repository, SQLiteOpenHelper(
         }
     }
 
-    override suspend fun save(cat: Cat) {
+    override suspend fun save(catDomain: CatDomain) {
+        Log.d("save", "Я в курсорах")
+        val catEntity = DomainToEntity.map(catDomain)
         val values = ContentValues()
-        values.put(NAME_COLUMN, cat.name)
-        values.put(BREED_COLUMN, cat.breed)
-        values.put(AGE_COLUMN, cat.age)
-        values.put(CREATED_COLUMN, cat.created)
+        values.put(NAME_COLUMN, catEntity.name)
+        values.put(BREED_COLUMN, catEntity.breed)
+        values.put(AGE_COLUMN, catEntity.age)
+        values.put(CREATED_COLUMN, catEntity.created)
         writableDatabase.insert(TABLE_NAME, null, values)
         updateList(typeSorting)
     }
 
-    override suspend fun delete(cat: Cat): Int {
-        writableDatabase.delete(TABLE_NAME, "id = ${cat.id}", null)
+    override suspend fun delete(catDomain: CatDomain): Int {
+        Log.d("delete", "Я в курсорах")
+        val catEntity = DomainToEntity.map(catDomain)
+        val result = writableDatabase.delete(TABLE_NAME, "id = ${catEntity.id}", null)
         updateList(typeSorting)
-        return 1
+        return result
     }
 
-    override suspend fun update(cat: Cat) {
+    override suspend fun update(catDomain: CatDomain) {
+        val catEntity = DomainToEntity.map(catDomain)
         val updatedValues = ContentValues()
-        updatedValues.put(NAME_COLUMN, cat.name)
-        updatedValues.put(BREED_COLUMN, cat.breed)
-        updatedValues.put(AGE_COLUMN, cat.age)
-        val where = "id = ${cat.id}"
+        updatedValues.put(NAME_COLUMN, catEntity.name)
+        updatedValues.put(BREED_COLUMN, catEntity.breed)
+        updatedValues.put(AGE_COLUMN, catEntity.age)
+        val where = "id = ${catEntity.id}"
         writableDatabase.update(TABLE_NAME, updatedValues, where, null)
         updateList(typeSorting)
     }
 
 
-    private fun updateList(sortList: String): List<Cat> {
+    private fun updateList(sortList: String): List<CatEntity> {
         listOfTopics = mutableListOf()
         when (sortList) {
             "BY_NAME" -> getListCatsSortName()
@@ -153,7 +161,7 @@ class CursorDataBase(context: Context) : Repository, SQLiteOpenHelper(
                 val breed = cursor.getString(cursor.getColumnIndex(BREED_COLUMN))
                 val age = cursor.getInt(cursor.getColumnIndex(AGE_COLUMN))
                 val created = cursor.getLong(cursor.getColumnIndex(CREATED_COLUMN))
-                val cat = Cat(id, name, breed, age, created)
+                val cat = CatEntity(id, name, breed, age, created)
                 listOfTopics.add(cat)
             } while (cursor.moveToNext())
         }
