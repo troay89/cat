@@ -5,11 +5,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.kotovskdatabase.domain.Repository
 import com.example.kotovskdatabase.domain.usecase.DeleteCatUseCase
 import com.example.kotovskdatabase.domain.usecase.GetListCatsUseCase
 import com.example.kotovskdatabase.domain.usecase.SaveCatUseCase
 import com.example.kotovskdatabase.repositiry.cursor.CursorDataBase
-import com.example.kotovskdatabase.repositiry.room.RepositoryImpl
 import com.example.kotovskdatabase.ui.ADD_TASK_RESULT_OK
 import com.example.kotovskdatabase.ui.EDIT_TASK_RESULT_OK
 import com.example.kotovskdatabase.ui.mapper.CatDomainFlowToUICatFlow
@@ -22,11 +22,11 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-class CatListViewModel(private val preferencesManager: PreferencesManager, ) : ViewModel() {
+class CatListViewModel(private val preferencesManager: PreferencesManager, val repositoryRoom: Repository ) : ViewModel() {
 
-    private fun chooseRepository() = if (preferencesManager.getKeyBD() == ChooseBD.FROM_ROOM.name) {
+    private fun chooseRepository(): Repository = if (preferencesManager.getKeyBD() == ChooseBD.FROM_ROOM.name) {
         Log.d("init first", "ROOM")
-        RepositoryImpl.get()
+        repositoryRoom
     } else {
         Log.d("init first", "COURSE")
         CursorDataBase.get()

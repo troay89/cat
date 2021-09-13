@@ -4,15 +4,15 @@ import android.content.Context
 import android.util.Log
 import com.example.kotovskdatabase.domain.Repository
 import com.example.kotovskdatabase.domain.model.CatDomain
-import com.example.kotovskdatabase.repositiry.model.CatEntity
 import com.example.kotovskdatabase.repositiry.mapper.DomainToEntity
 import com.example.kotovskdatabase.repositiry.mapper.EntityFlowToDomainFlow
+import com.example.kotovskdatabase.repositiry.model.CatEntity
 import kotlinx.coroutines.flow.Flow
 
 
-class RepositoryImpl private constructor(context: Context) : Repository {
+class RepositoryImpl(private val dao: CatsDao) : Repository {
 
-    private val dao = DatabaseRoom.create(context).catsDao
+//    private val dao = DatabaseRoom.create(context).catsDao
 
     override fun getListCats(typeSort: String): Flow<List<CatDomain>> {
 
@@ -50,11 +50,11 @@ class RepositoryImpl private constructor(context: Context) : Repository {
 
         private var INSTANCE: RepositoryImpl? = null
 
-        fun initialize(context: Context) {
-            if (INSTANCE == null) {
-                INSTANCE = RepositoryImpl(context)
-            }
-        }
+//        fun initialize(context: Context) {
+//            if (INSTANCE == null) {
+//                INSTANCE = RepositoryImpl(context)
+//            }
+//        }
 
         fun get(): RepositoryImpl =
             INSTANCE ?: throw IllegalStateException("RoomRepository must be initialized")

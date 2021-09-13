@@ -10,7 +10,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.kotovskdatabase.R
 import com.example.kotovskdatabase.databinding.CatListFragmentBinding
-import com.example.kotovskdatabase.ui.factory
 import com.example.kotovskdatabase.ui.firstscreen.adapter.CatAdapter
 import com.example.kotovskdatabase.ui.firstscreen.adapter.SwipeHelper
 import com.google.android.material.snackbar.Snackbar
@@ -18,7 +17,7 @@ import kotlinx.coroutines.flow.collect
 
 class CatListFragment : Fragment() {
 
-    private val viewModel: CatListViewModel by viewModels { factory() }
+    private val viewModel: CatListViewModel by viewModels()
 
     private var binding: CatListFragmentBinding? = null
 

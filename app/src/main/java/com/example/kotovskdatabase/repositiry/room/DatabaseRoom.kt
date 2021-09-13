@@ -17,6 +17,6 @@ abstract class DatabaseRoom : RoomDatabase(), AllDatabase {
                 context,
                 DatabaseRoom::class.java,
                 CATS_DATABASE
-            ).allowMainThreadQueries().build()
+            ).build()
     }
 }

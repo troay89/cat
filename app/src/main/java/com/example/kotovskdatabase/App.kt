@@ -1,22 +1,22 @@
 package com.example.kotovskdatabase
 
 import android.app.Application
-import com.example.kotovskdatabase.repositiry.room.RepositoryImpl
-import com.example.kotovskdatabase.repositiry.cursor.CursorDataBase
-import com.example.kotovskdatabase.ui.firstscreen.PreferencesManager
+import com.example.kotovskdatabase.di.mainViewModel
+import com.example.kotovskdatabase.di.roomModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 
 class App : Application() {
 
 
-    lateinit var preferencesManager: PreferencesManager
+//    lateinit var preferencesManager: PreferencesManager
 
     override fun onCreate() {
         super.onCreate()
-        RepositoryImpl.initialize(this)
-        CursorDataBase.initialize(this)
-        preferencesManager = PreferencesManager(this)
+//        RepositoryImpl.initialize(this)
+//        CursorDataBase.initialize(this)
+//        preferencesManager = PreferencesManager(this)
+        initKoin()
     }
 
     private fun initKoin() {
@@ -24,7 +24,8 @@ class App : Application() {
             androidContext(this@App)
             modules(
                 listOf(
-
+                    roomModule,
+                    mainViewModel
                 )
             )
         }
