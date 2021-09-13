@@ -4,8 +4,9 @@ import android.content.Context
 import android.util.Log
 import com.example.kotovskdatabase.domain.Repository
 import com.example.kotovskdatabase.domain.model.CatDomain
+import com.example.kotovskdatabase.repositiry.model.CatEntity
 import com.example.kotovskdatabase.repositiry.mapper.DomainToEntity
-import com.example.kotovskdatabase.repositiry.mapper.EntityListToDomainList
+import com.example.kotovskdatabase.repositiry.mapper.EntityFlowToDomainFlow
 import kotlinx.coroutines.flow.Flow
 
 
@@ -16,34 +17,21 @@ class RepositoryImpl private constructor(context: Context) : Repository {
     override fun getListCats(typeSort: String): Flow<List<CatDomain>> {
 
         val getList = when (typeSort) {
-            "BY_NAME" -> {
-                Log.d("getListCats", "Я в рум")
-                dao.getListCatsSortedByName()
-            }
+            "BY_NAME" -> EntityFlowToDomainFlow.map(dao.getListCatsSortedByName())
 
-            "BY_AGE" -> {
-                Log.d("getListCats", "Я в рум")
-                dao.getListCatsSortedByAge()
-            }
+            "BY_AGE" -> EntityFlowToDomainFlow.map(dao.getListCatsSortedByAge())
 
-            "BY_DATE" -> {
-                Log.d("getListCats", "Я в рум")
-                dao.getListCatsSortedByDateCreated()
-            }
+            "BY_DATE" -> EntityFlowToDomainFlow.map(dao.getListCatsSortedByDateCreated())
 
-            else -> {
-                Log.d("getListCats", "Я в рум")
-                dao.getListCatsSortedByDateCreated()
-            }
+            else -> EntityFlowToDomainFlow.map(dao.getListCatsSortedByDateCreated())
+
         }
-
-        EntityListToDomainList.map(getList)
         return getList
     }
 
     override suspend fun save(catDomain: CatDomain) {
-        Log.d("save", "Я в рум")
-        val catEntity = DomainToEntity.map(catDomain)
+        val catEntity:CatEntity = DomainToEntity.map(catDomain)
+        Log.d("save", catEntity.toString())
         dao.add(catEntity)
     }
 

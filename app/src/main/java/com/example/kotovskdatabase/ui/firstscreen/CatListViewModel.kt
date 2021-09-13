@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.kotovskdatabase.domain.model.CatDomain
 import com.example.kotovskdatabase.domain.usecase.DeleteCatUseCase
 import com.example.kotovskdatabase.domain.usecase.GetListCatsUseCase
 import com.example.kotovskdatabase.domain.usecase.SaveCatUseCase
@@ -13,6 +12,9 @@ import com.example.kotovskdatabase.repositiry.cursor.CursorDataBase
 import com.example.kotovskdatabase.repositiry.room.RepositoryImpl
 import com.example.kotovskdatabase.ui.ADD_TASK_RESULT_OK
 import com.example.kotovskdatabase.ui.EDIT_TASK_RESULT_OK
+import com.example.kotovskdatabase.ui.mapper.CatDomainFlowToUICatFlow
+import com.example.kotovskdatabase.ui.mapper.UICatToDomain
+import com.example.kotovskdatabase.ui.model.UICat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -38,31 +40,33 @@ class CatListViewModel(private val preferencesManager: PreferencesManager, ) : V
     private val preferencesFlow: Flow<FilterPreferences> = preferencesManager.orderFlow
 
     @ExperimentalCoroutinesApi
-    private val catDomainFlow:Flow<List<CatDomain>> =
+    private val catFlow:Flow<List<UICat>> =
         preferencesFlow.flatMapLatest { filterPreferences ->
-            Log.d("catFlow", filterPreferences.sortOrder.name)
-            Log.d("catFlow", filterPreferences.chooseBD.name)
-            GetListCatsUseCase(chooseRepository()).execute(filterPreferences.sortOrder.name)
+            val a = GetListCatsUseCase(chooseRepository()).execute(filterPreferences.sortOrder.name)
+            CatDomainFlowToUICatFlow.map(a)
     }
 
     @ExperimentalCoroutinesApi
-    var cats: LiveData<List<CatDomain>> = catDomainFlow.asLiveData()
+    var cats: LiveData<List<UICat>> = catFlow.asLiveData()
 
     fun onAddNewCatClick() = viewModelScope.launch {
         catEventChannel.send(CatEvent.NavigateToAddCatFragment(preferencesManager.getKeyBD()))
     }
 
-    fun onTaskSwiped(catDomain: CatDomain) = viewModelScope.launch {
+    fun onTaskSwiped(uiCat: UICat) = viewModelScope.launch {
+        val catDomain = UICatToDomain.map(uiCat)
         DeleteCatUseCase(chooseRepository()).execute(catDomain)
-        catEventChannel.send(CatEvent.ShowUndoDeleteTaskMessage(catDomain))
+        catEventChannel.send(CatEvent.ShowUndoDeleteTaskMessage(uiCat))
     }
 
-    fun onUndoDeletedClick(catDomain: CatDomain) = viewModelScope.launch {
+    fun onUndoDeletedClick(uiCat: UICat) = viewModelScope.launch {
+        val catDomain = UICatToDomain.map(uiCat)
         SaveCatUseCase(chooseRepository()).execute(catDomain)
     }
 
-    fun onCatSelected(catDomain: CatDomain) = viewModelScope.launch {
-        catEventChannel.send(CatEvent.NavigateToEditTaskScreen(catDomain, preferencesManager.getKeyBD()))
+    fun onCatSelected(uiCat: UICat) = viewModelScope.launch {
+        Log.d("onCatSelected", uiCat.toString())
+        catEventChannel.send(CatEvent.NavigateToEditTaskScreen(uiCat, preferencesManager.getKeyBD()))
     }
 
     fun onAddEditResult(result: Int) {
@@ -87,8 +91,8 @@ class CatListViewModel(private val preferencesManager: PreferencesManager, ) : V
 
     sealed class CatEvent {
         data class NavigateToAddCatFragment(val keyBd: String) : CatEvent()
-        data class NavigateToEditTaskScreen(val catDomain: CatDomain, val keyBd: String) : CatEvent()
-        data class ShowUndoDeleteTaskMessage(val catDomain: CatDomain) : CatEvent()
+        data class NavigateToEditTaskScreen(val uiCat: UICat, val keyBd: String) : CatEvent()
+        data class ShowUndoDeleteTaskMessage(val uiCat: UICat) : CatEvent()
         data class ShowTaskSavedConfirmationMessage(val msg: String) : CatEvent()
     }
 }

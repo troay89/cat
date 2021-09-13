@@ -4,19 +4,19 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.kotovskdatabase.domain.model.CatDomain
 import com.example.kotovskdatabase.domain.usecase.SaveCatUseCase
 import com.example.kotovskdatabase.domain.usecase.UpdateCatUseCase
-import com.example.kotovskdatabase.repositiry.room.RepositoryImpl
 import com.example.kotovskdatabase.repositiry.cursor.CursorDataBase
-import com.example.kotovskdatabase.repositiry.entity.CatEntity
+import com.example.kotovskdatabase.repositiry.room.RepositoryImpl
 import com.example.kotovskdatabase.ui.ADD_TASK_RESULT_OK
 import com.example.kotovskdatabase.ui.EDIT_TASK_RESULT_OK
 import com.example.kotovskdatabase.ui.firstscreen.ChooseBD
+import com.example.kotovskdatabase.ui.mapper.UICatToDomain
+import com.example.kotovskdatabase.ui.model.UICat
 import com.example.kotovskdatabase.ui.secondscreen.CatViewModel.CatViewModel.API_BD_KEY
-import com.example.kotovskdatabase.ui.secondscreen.CatViewModel.CatViewModel.CAT_KEY
 import com.example.kotovskdatabase.ui.secondscreen.CatViewModel.CatViewModel.CAT_AGE_KEY
 import com.example.kotovskdatabase.ui.secondscreen.CatViewModel.CatViewModel.CAT_BREED_KEY
+import com.example.kotovskdatabase.ui.secondscreen.CatViewModel.CatViewModel.CAT_KEY
 import com.example.kotovskdatabase.ui.secondscreen.CatViewModel.CatViewModel.CAT_NAME_KEY
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -26,7 +26,7 @@ class CatViewModel(
     private val state: SavedStateHandle,
 ) : ViewModel() {
 
-    val catDomain: CatDomain? = state.get<CatDomain>(CAT_KEY)
+    private val uiCat:UICat? = state.get<UICat>(CAT_KEY)
 
     private fun chooseRepository() = if (state.get<String>(API_BD_KEY) == ChooseBD.FROM_ROOM.name) {
         Log.d("init second", "ROOM")
@@ -36,19 +36,19 @@ class CatViewModel(
         CursorDataBase.get()
     }
 
-    var catName = state.get<String>(CAT_NAME_KEY) ?: catDomain?.name ?: ""
+    var catName = state.get<String>(CAT_NAME_KEY) ?: uiCat?.name ?: ""
         set(value) {
             field = value
             state.set(CAT_NAME_KEY, value)
         }
 
-    var catBreed = state.get<String>(CAT_BREED_KEY) ?: catDomain?.breed ?: ""
+    var catBreed = state.get<String>(CAT_BREED_KEY) ?: uiCat?.breed ?: ""
         set(value) {
             field = value
             state.set(CAT_BREED_KEY, value)
         }
 
-    var catAge = state.get<String>(CAT_AGE_KEY) ?: catDomain?.age ?: ""
+    var catAge = state.get<String>(CAT_AGE_KEY) ?: uiCat?.age ?: ""
         set(value) {
             field = value
             state.set(CAT_AGE_KEY, value)
@@ -60,27 +60,28 @@ class CatViewModel(
             showInvalidInputMessage()
             return
         }
-        if (catDomain == null) {
-            val newCat = CatDomain(name = catName, breed = catBreed, age = catAge.toString().toInt(), id = null)
+        if (uiCat == null) {
+            val newCat = UICat(id = 0, name = catName, breed = catBreed, age = catAge.toString().toInt())
             createCat(newCat)
         }
         else{
-            val updateCat = catDomain.copy(name = catName, breed = catBreed, age = catAge.toString().toInt())
+            val updateCat = uiCat.copy(name = catName, breed = catBreed, age = catAge.toString().toInt())
             updateCat(updateCat)
         }
     }
 
-
     private val addEditCatEventChannel = Channel<AddEditCatEvent>()
     val addEditCatEvent = addEditCatEventChannel.receiveAsFlow()
 
-    private fun createCat(newCatDomain: CatDomain) = viewModelScope.launch {
-        SaveCatUseCase(chooseRepository()).execute(newCatDomain)
+    private fun createCat(newUICat: UICat) = viewModelScope.launch {
+        val catDomain = UICatToDomain.map(newUICat)
+        SaveCatUseCase(chooseRepository()).execute(catDomain)
         addEditCatEventChannel.send(AddEditCatEvent.NavigateBackWithResult(ADD_TASK_RESULT_OK))
     }
 
-    private fun updateCat(updateCatDomain: CatDomain) = viewModelScope.launch {
-        UpdateCatUseCase(chooseRepository()).execute(updateCatDomain)
+    private fun updateCat(updateUICat: UICat) = viewModelScope.launch {
+        val catDomain = UICatToDomain.map(updateUICat)
+        UpdateCatUseCase(chooseRepository()).execute(catDomain)
         addEditCatEventChannel.send(AddEditCatEvent.NavigateBackWithResult(EDIT_TASK_RESULT_OK))
     }
 

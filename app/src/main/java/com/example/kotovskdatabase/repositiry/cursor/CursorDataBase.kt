@@ -8,8 +8,9 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 import com.example.kotovskdatabase.domain.Repository
 import com.example.kotovskdatabase.domain.model.CatDomain
-import com.example.kotovskdatabase.repositiry.entity.CatEntity
+import com.example.kotovskdatabase.repositiry.model.CatEntity
 import com.example.kotovskdatabase.repositiry.mapper.DomainToEntity
+import com.example.kotovskdatabase.repositiry.mapper.EntityListToDomainList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -79,9 +80,10 @@ class CursorDataBase(context: Context) : Repository, SQLiteOpenHelper(
         Log.d("getListCats", "Я в курсорах")
         typeSorting = typeSort
         updateList(typeSorting)
-        emit(listOfTopics)
+        EntityListToDomainList.map(listOfTopics)
+        emit(EntityListToDomainList.map(listOfTopics))
         listenListCat().collect {
-            emit(it)
+            emit(EntityListToDomainList.map(it))
         }
     }
 

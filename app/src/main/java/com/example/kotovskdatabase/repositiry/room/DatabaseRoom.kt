@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.kotovskdatabase.repositiry.cursor.CATS_DATABASE
-import com.example.kotovskdatabase.repositiry.entity.CatEntity
+import com.example.kotovskdatabase.repositiry.model.CatEntity
 
 
 @Database(entities = [CatEntity::class], version = 1, exportSchema = false)

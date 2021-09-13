@@ -1,7 +1,7 @@
 package com.example.kotovskdatabase.repositiry.room
 
 import androidx.room.*
-import com.example.kotovskdatabase.repositiry.entity.CatEntity
+import com.example.kotovskdatabase.repositiry.model.CatEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -10,13 +10,13 @@ interface CatsDao {
     @Query("SELECT * FROM cats_table")
     fun getAll(): Flow<List<CatEntity>>
 
-    @Query("SELECT * FROM cats_table ORDER BY name")
+    @Query("SELECT * FROM cats_table ORDER BY name COLLATE NOCASE ")
     fun getListCatsSortedByName(): Flow<List<CatEntity>>
 
-    @Query("SELECT * FROM cats_table ORDER BY age")
+    @Query("SELECT * FROM cats_table ORDER BY age COLLATE NOCASE ")
     fun getListCatsSortedByAge(): Flow<List<CatEntity>>
 
-    @Query("SELECT * FROM cats_table ORDER BY created")
+    @Query("SELECT * FROM cats_table ORDER BY created COLLATE NOCASE ")
     fun getListCatsSortedByDateCreated(): Flow<List<CatEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

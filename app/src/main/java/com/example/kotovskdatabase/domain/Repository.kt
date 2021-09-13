@@ -1,7 +1,6 @@
 package com.example.kotovskdatabase.domain
 
 import com.example.kotovskdatabase.domain.model.CatDomain
-import com.example.kotovskdatabase.repositiry.entity.CatEntity
 import kotlinx.coroutines.flow.Flow
 
 interface Repository {

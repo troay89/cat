@@ -127,14 +127,14 @@ class CatListFragment : Fragment() {
             is CatListViewModel.CatEvent.ShowUndoDeleteTaskMessage -> {
                 Snackbar.make(requireView(), R.string.cat_delete, Snackbar.LENGTH_LONG)
                     .setAction(R.string.cancel) {
-                        viewModel.onUndoDeletedClick(event.catDomain)
+                        viewModel.onUndoDeletedClick(event.uiCat)
                     }.show()
             }
 
             is CatListViewModel.CatEvent.NavigateToEditTaskScreen -> {
                 val action =
                     CatListFragmentDirections.actionCatListFragmentToCatFragment(
-                        event.catDomain,
+                        event.uiCat,
                         getString(R.string.editing),
                         event.keyBd
                     )

@@ -21,7 +21,7 @@
         tools:layout="@layout/cat_fragment">
         <argument
             android:name="cat"
-            app:argType="com.example.kotovskdatabase.repositiry.entity.Cat"
+            app:argType="com.example.kotovskdatabase.ui.model.UICat"
             app:nullable="true" />
         <argument
             android:name="title"
