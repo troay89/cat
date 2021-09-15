@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
-import androidx.fragment.app.viewModels
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.collect
 
 class CatListFragment : Fragment() {
 
-    private val viewModel: CatListViewModel by viewModels()
+    private val viewModel: CatListViewModel by viewModel()
 
     private var binding: CatListFragmentBinding? = null
 

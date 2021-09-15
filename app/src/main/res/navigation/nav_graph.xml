@@ -27,7 +27,7 @@
             android:name="title"
             app:argType="string" />
         <argument
-            android:name="ApiBd"
+            android:name="apiBd"
             app:argType="string" />
     </fragment>
 </navigation>

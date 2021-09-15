@@ -8,14 +8,9 @@ import org.koin.core.context.startKoin
 
 class App : Application() {
 
-
-//    lateinit var preferencesManager: PreferencesManager
-
     override fun onCreate() {
         super.onCreate()
-//        RepositoryImpl.initialize(this)
-//        CursorDataBase.initialize(this)
-//        preferencesManager = PreferencesManager(this)
+
         initKoin()
     }
 

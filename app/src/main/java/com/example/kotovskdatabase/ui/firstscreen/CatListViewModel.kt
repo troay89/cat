@@ -22,14 +22,17 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-class CatListViewModel(private val preferencesManager: PreferencesManager, val repositoryRoom: Repository ) : ViewModel() {
+class CatListViewModel(private val preferencesManager: PreferencesManager,
+                       private val repositoryRoom: Repository,
+//                       private val repositoryCursor: Repository
+                       ) : ViewModel() {
 
     private fun chooseRepository(): Repository = if (preferencesManager.getKeyBD() == ChooseBD.FROM_ROOM.name) {
         Log.d("init first", "ROOM")
         repositoryRoom
     } else {
         Log.d("init first", "COURSE")
-        CursorDataBase.get()
+        repositoryRoom
     }
 
     //    https://habr.com/ru/post/529944/
@@ -42,8 +45,8 @@ class CatListViewModel(private val preferencesManager: PreferencesManager, val r
     @ExperimentalCoroutinesApi
     private val catFlow:Flow<List<UICat>> =
         preferencesFlow.flatMapLatest { filterPreferences ->
-            val a = GetListCatsUseCase(chooseRepository()).execute(filterPreferences.sortOrder.name)
-            CatDomainFlowToUICatFlow.map(a)
+            val catDomainFlow = GetListCatsUseCase(chooseRepository()).execute(filterPreferences.sortOrder.name)
+            CatDomainFlowToUICatFlow.map(catDomainFlow)
     }
 
     @ExperimentalCoroutinesApi

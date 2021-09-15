@@ -9,20 +9,25 @@ import androidx.core.os.bundleOf
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.example.kotovskdatabase.R
 import com.example.kotovskdatabase.databinding.CatFragmentBinding
+import com.example.kotovskdatabase.ui.model.UICat
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.collect
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
 class CatFragment : Fragment() {
 
-    private val viewModel: CatViewModel by viewModels()
+    private val viewModel: CatViewModel by viewModel()
+
 
     private var binding: CatFragmentBinding? = null
+
+    private val args by navArgs<CatFragmentArgs>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -32,9 +37,12 @@ class CatFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        updateUI()
-        pressButton()
-        textChangedListener()
+        val uiCat: UICat? = args.cat
+        val apiBd = args.apiBd
+
+        viewModel.chooseRepository(apiBd)
+
+        updateUI(uiCat)
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.addEditCatEvent.collect { event ->
@@ -43,21 +51,43 @@ class CatFragment : Fragment() {
         }
     }
 
-
     override fun onDestroyView() {
         super.onDestroyView()
         binding = null
     }
 
-    private fun pressButton() {
+    private fun updateUI(uiCat: UICat?) {
+
+        var catName = uiCat?.name ?: ""
+        var catBreed = uiCat?.breed ?: ""
+        var catAge = uiCat?.age ?: ""
+
         views {
+            nameEdit.setText(catName)
+            breedEdit.setText(catBreed)
+            ageEdit.setText(catAge.toString())
+
+            nameEdit.addTextChangedListener {
+                catName = it.toString()
+            }
+
+
+            breedEdit.addTextChangedListener {
+                catBreed = it.toString()
+            }
+
+            ageEdit.addTextChangedListener {
+                catAge = it.toString()
+            }
+
+
             fabAddCat.setOnClickListener {
-                viewModel.onSaveClick()
+                addingCat(uiCat, catName, catBreed , catAge as String)
             }
 
             ageEdit.setOnEditorActionListener { _, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_SEND) {
-                    viewModel.onSaveClick()
+                    addingCat(uiCat, catName, catBreed , catAge as String)
                     return@setOnEditorActionListener true
                 }
                 return@setOnEditorActionListener false
@@ -65,29 +95,9 @@ class CatFragment : Fragment() {
         }
     }
 
-    private fun updateUI() {
-        views {
-            nameEdit.setText(viewModel.catName)
-            breedEdit.setText(viewModel.catBreed)
-            ageEdit.setText(viewModel.catAge.toString())
-        }
-    }
-
-    private fun textChangedListener() {
-        views {
-            nameEdit.addTextChangedListener {
-                viewModel.catName = it.toString()
-            }
-
-
-            breedEdit.addTextChangedListener {
-                viewModel.catBreed = it.toString()
-            }
-
-            ageEdit.addTextChangedListener {
-                viewModel.catAge = it.toString()
-            }
-        }
+    private fun addingCat (uiCat: UICat?, catName: String, catBreed: String , catAge: String) {
+        if (uiCat == null) viewModel.onSaveClick(catName, catBreed , catAge)
+        else viewModel.onUpdateClick(uiCat, catName, catBreed , catAge)
     }
 
     private fun eventImplementation(event: CatViewModel.AddEditCatEvent) {

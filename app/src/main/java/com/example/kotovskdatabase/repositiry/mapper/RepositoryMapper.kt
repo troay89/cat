@@ -8,19 +8,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
-object EntityToDomain : BaseMapper<CatEntity, CatDomain> {
-
-    override fun map(type: CatEntity?): CatDomain {
-        return CatDomain(
-            id = type!!.id,
-            name = type.name,
-            breed = type.breed,
-            age = type.age,
-            created = type.created
-        )
-    }
-}
-
 object DomainToEntity : BaseMapper<CatDomain, CatEntity> {
 
     override fun map(type: CatDomain?): CatEntity {

@@ -45,10 +45,6 @@ class PreferencesManager(private val context: Context) {
 
     fun getKeyBD() = sharedPreferences.getString(API_BD_KEY, ChooseBD.FROM_ROOM.name)!!
 
-
-//    fun getKeySort() = sharedPreferences.getString(SORT_KEY, ChooseBD.FROM_ROOM.name)!!
-
-
 }
 
 private object PreferencesKeys {

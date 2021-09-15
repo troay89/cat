@@ -169,19 +169,23 @@ class CursorDataBase(context: Context) : Repository, SQLiteOpenHelper(
         }
     }
 
+//    companion object {
+//
+//        private var INSTANCE: CursorDataBase? = null
+//
+//        fun initialize(context: Context) {
+//            if (INSTANCE == null) {
+//                INSTANCE = CursorDataBase(context)
+//            }
+//        }
+//        fun get(): CursorDataBase =
+//            INSTANCE ?: throw IllegalStateException("CursorDataBase must be initialized")
+//    }
+
     companion object {
-
-        private var INSTANCE: CursorDataBase? = null
-
-        fun initialize(context: Context) {
-            if (INSTANCE == null) {
-                INSTANCE = CursorDataBase(context)
-            }
+        @Synchronized
+        fun getInstance(context: Context): CursorDataBase {
+            return CursorDataBase(context)
         }
-
-        fun get(): CursorDataBase =
-            INSTANCE ?: throw IllegalStateException("CursorDataBase must be initialized")
-
     }
-
 }
